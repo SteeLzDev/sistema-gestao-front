@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
-import { Package } from "lucide-react"
+import { Package } from 'lucide-react'
+import { authService } from "@/services/api"
 
 export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     senha: "",
   })
   const [loading, setLoading] = useState(false)
@@ -30,40 +31,25 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Aqui você chamaria o serviço de autenticação
-      // const response = await authService.login(formData)
+      const response = await authService.login({
+        username: formData.username,
+        senha: formData.senha,
+      })
 
-      // Simulando autenticação
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Simulando token JWT
-      const fakeToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6IkNhcmxvcyBPbGl2ZWlyYSIsInJvbGUiOiJBZG1pbmlzdHJhZG9yIn0.8tat9AtmGHLz9WMqYG5OLBe4BjqXDkqPFMI7_w"
-
-      // Armazenar token no localStorage
-      localStorage.setItem("token", fakeToken)
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: 1,
-          nome: "Carlos Oliveira",
-          email: formData.email,
-          perfil: "Administrador",
-        }),
-      )
+      localStorage.setItem("token", response.data.token)
+      localStorage.setItem("user", JSON.stringify(response.data.user))
 
       toast({
         title: "Login realizado com sucesso",
         description: "Bem-vindo ao Sistema de Gestão",
       })
 
-      // Redirecionar para a página inicial
       router.push("/")
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao fazer login:", error)
       toast({
         title: "Erro de autenticação",
-        description: "Email ou senha incorretos. Tente novamente.",
+        description: error?.response?.data?.message || "Usuário ou senha incorretos. Tente novamente.",
         variant: "destructive",
       })
     } finally {
@@ -84,13 +70,12 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Usuário</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="seu.email@exemplo.com"
-                value={formData.email}
+                id="username"
+                name="username"
+                placeholder="seu.usuario"
+                value={formData.username}
                 onChange={handleChange}
                 required
               />
@@ -119,11 +104,10 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="flex flex-col">
           <p className="text-center text-sm text-muted-foreground mt-2">
-            Para fins de demonstração, use qualquer email e senha.
+            Para fins de demonstração, use qualquer usuário e senha.
           </p>
         </CardFooter>
       </Card>
     </div>
   )
 }
-

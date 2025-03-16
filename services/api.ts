@@ -31,9 +31,14 @@ api.interceptors.response.use(
 )
 
 export const authService = {
-  login: async (credentials: { email: string; senha: string }) => {
+  login: async (credentials: { username: string; senha: string }) => {
+    try {
     const response = await api.post("/auth/login", credentials)
-    return response.data
+    return {data: response.data};
+    } catch (error) {
+      throw error;
+    }
+
   },
 
   logout: () => {

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Edit, Trash, Shield, User, AlertCircle } from "lucide-react"
+import { Plus, Edit, Trash, Shield, User, AlertCircle, RefreshCw } from "lucide-react"
 import { usuarioService } from "@/services/api"
 import { useToast } from "@/components/ui/use-toast"
 import { UsuarioForm } from "@/components/usuario/UsuarioForm"
@@ -24,7 +24,9 @@ import {
 interface Usuario {
   id: number
   nome: string
+  username: string
   email: string
+  senha: string
   cargo: string
   perfil: string
   status: string
@@ -49,6 +51,10 @@ export default function UsuariosPage() {
       setError(null)
       const data = await usuarioService.listarUsuarios()
       setUsuarios(data)
+      toast({
+        title: "Sucesso",
+        description: "Usuários carregados com sucesso.",
+      })
     } catch (error) {
       console.error("Erro ao carregar usuários:", error)
       setError("Não foi possível carregar os usuários. Verifique se o servidor está rodando.")
@@ -109,7 +115,9 @@ export default function UsuariosPage() {
     {
       id: 1,
       nome: "Carlos Oliveira",
+      username: "carlos",
       email: "carlos@oficina.com",
+      senha: "123456",
       cargo: "Gerente",
       perfil: "Administrador",
       status: "Ativo",
@@ -117,7 +125,9 @@ export default function UsuariosPage() {
     {
       id: 2,
       nome: "Ana Silva",
+      username: "ana",
       email: "ana@oficina.com",
+      senha: "123456",
       cargo: "Atendente",
       perfil: "Operador",
       status: "Ativo",
@@ -125,7 +135,9 @@ export default function UsuariosPage() {
     {
       id: 3,
       nome: "Roberto Santos",
+      username: "roberto",
       email: "roberto@oficina.com",
+      senha: "123456",
       cargo: "Mecânico",
       perfil: "Operador",
       status: "Ativo",
@@ -133,7 +145,9 @@ export default function UsuariosPage() {
     {
       id: 4,
       nome: "Juliana Costa",
+      username: "juliana",
       email: "juliana@oficina.com",
+      senha: "123456",
       cargo: "Financeiro",
       perfil: "Administrador",
       status: "Ativo",
@@ -141,7 +155,9 @@ export default function UsuariosPage() {
     {
       id: 5,
       nome: "Pedro Almeida",
+      username: "pedro",
       email: "pedro@oficina.com",
+      senha: "123456",
       cargo: "Estoquista",
       perfil: "Operador",
       status: "Inativo",
@@ -180,6 +196,7 @@ export default function UsuariosPage() {
               <p>{error}</p>
             </div>
             <Button onClick={carregarUsuarios} className="mt-4">
+              <RefreshCw className="mr-2 h-4 w-4" />
               Tentar novamente
             </Button>
           </CardContent>
@@ -197,6 +214,7 @@ export default function UsuariosPage() {
               <TableRow>
                 <TableHead className="w-[50px]">ID</TableHead>
                 <TableHead>Nome</TableHead>
+                <TableHead>Usuário</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Cargo</TableHead>
                 <TableHead>Perfil</TableHead>
@@ -209,6 +227,7 @@ export default function UsuariosPage() {
                 <TableRow key={usuario.id}>
                   <TableCell>{usuario.id}</TableCell>
                   <TableCell className="font-medium">{usuario.nome}</TableCell>
+                  <TableCell>{usuario.username}</TableCell>
                   <TableCell>{usuario.email}</TableCell>
                   <TableCell>{usuario.cargo}</TableCell>
                   <TableCell>

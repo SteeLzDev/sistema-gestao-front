@@ -1,3 +1,4 @@
+"use client"
 
 import type React from "react"
 
@@ -12,7 +13,9 @@ import { useToast } from "@/components/ui/use-toast"
 interface Usuario {
   id?: number
   nome: string
+  username: string
   email: string
+  senha: string
   cargo: string
   perfil: string
   status: string
@@ -28,7 +31,9 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
   const [formData, setFormData] = useState<Usuario>({
     id: usuario?.id,
     nome: usuario?.nome || "",
+    username: usuario?.username || "",
     email: usuario?.email || "",
+    senha: usuario?.senha || "",
     cargo: usuario?.cargo || "",
     perfil: usuario?.perfil || "Operador",
     status: usuario?.status || "Ativo",
@@ -91,6 +96,18 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
       </div>
 
       <div className="grid gap-2">
+        <Label htmlFor="username">Nome de Usuário</Label>
+        <Input
+          id="username"
+          name="username"
+          value={formData.username}
+          onChange={handleChange}
+          placeholder="Ex: joao.silva"
+          required
+        />
+      </div>
+
+      <div className="grid gap-2">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
@@ -101,6 +118,20 @@ export function UsuarioForm({ usuario, onSuccess, onCancel }: UsuarioFormProps) 
           placeholder="Ex: joao.silva@empresa.com"
           required
         />
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="senha">Senha</Label>
+        <Input
+          id="senha"
+          name="senha"
+          type="password"
+          value={formData.senha}
+          onChange={handleChange}
+          placeholder={usuario?.id ? "••••••••" : "Digite a senha"}
+          required={!usuario?.id}
+        />
+        {usuario?.id && <p className="text-xs text-muted-foreground">Deixe em branco para manter a senha atual.</p>}
       </div>
 
       <div className="grid gap-2">

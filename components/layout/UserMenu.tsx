@@ -2,9 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { authService } from "@/services/api"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import authService from "@/services/authService"
 import { LogOut, Settings, User } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
 
 export function UserMenu() {
   const [user, setUser] = useState<any>(null)
@@ -22,8 +29,9 @@ export function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Button variant="outline" className="flex items-center gap-2 rounded-lg">
+      {/* Aqui está a correção: usar asChild para que o Button seja o elemento de trigger */}
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="flex items-center gap-2 rounded-lg w-full">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
             {user.nome
               .split(" ")
@@ -37,7 +45,7 @@ export function UserMenu() {
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>

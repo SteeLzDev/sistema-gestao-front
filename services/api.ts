@@ -1,14 +1,44 @@
-import axios from "axios"
+import apiClient from "./apiClient"
 
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-})
+// Adicionar a importação do serviço de fila
+import filaService from "./filaService"
+
+// Serviço de autenticação
+export const authService = {
+  login: async (credentials: { email: string; senha: string }) => {
+    try {
+      const response = await apiClient.post("/auth/login", credentials)
+      return response
+    } catch (error) {
+      console.error("Erro ao fazer login:", error)
+      throw error
+    }
+  },
+
+  isAuthenticated: () => {
+    return !!localStorage.getItem("token")
+  },
+
+  getCurrentUser: () => {
+    const userStr = localStorage.getItem("user")
+    if (userStr) {
+      return JSON.parse(userStr)
+    }
+    return null
+  },
+
+  logout: () => {
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
+    window.location.href = "/login"
+  },
+}
 
 // Serviço de produtos
 export const produtoService = {
   listarProdutos: async () => {
     try {
-      const response = await api.get("/produtos")
+      const response = await apiClient.get("/produtos")
       return response.data
     } catch (error) {
       console.error("Erro ao listar produtos:", error)
@@ -18,7 +48,7 @@ export const produtoService = {
 
   buscarProduto: async (id: number) => {
     try {
-      const response = await api.get(`/produtos/${id}`)
+      const response = await apiClient.get(`/produtos/${id}`)
       return response.data
     } catch (error) {
       console.error(`Erro ao buscar produto ${id}:`, error)
@@ -28,7 +58,7 @@ export const produtoService = {
 
   criarProduto: async (produto: any) => {
     try {
-      const response = await api.post("/produtos", produto)
+      const response = await apiClient.post("/produtos", produto)
       return response.data
     } catch (error) {
       console.error("Erro ao criar produto:", error)
@@ -38,7 +68,7 @@ export const produtoService = {
 
   atualizarProduto: async (id: number, produto: any) => {
     try {
-      const response = await api.put(`/produtos/${id}`, produto)
+      const response = await apiClient.put(`/produtos/${id}`, produto)
       return response.data
     } catch (error) {
       console.error(`Erro ao atualizar produto ${id}:`, error)
@@ -48,7 +78,7 @@ export const produtoService = {
 
   removerProduto: async (id: number) => {
     try {
-      await api.delete(`/produtos/${id}`)
+      await apiClient.delete(`/produtos/${id}`)
     } catch (error) {
       console.error(`Erro ao remover produto ${id}:`, error)
       throw error
@@ -60,7 +90,7 @@ export const produtoService = {
 export const usuarioService = {
   listarUsuarios: async () => {
     try {
-      const response = await api.get("/usuarios")
+      const response = await apiClient.get("/usuarios")
       return response.data
     } catch (error) {
       console.error("Erro ao listar usuários:", error)
@@ -70,7 +100,7 @@ export const usuarioService = {
 
   buscarUsuario: async (id: number) => {
     try {
-      const response = await api.get(`/usuarios/${id}`)
+      const response = await apiClient.get(`/usuarios/${id}`)
       return response.data
     } catch (error) {
       console.error(`Erro ao buscar usuário ${id}:`, error)
@@ -80,7 +110,7 @@ export const usuarioService = {
 
   criarUsuario: async (usuario: any) => {
     try {
-      const response = await api.post("/usuarios", usuario)
+      const response = await apiClient.post("/usuarios", usuario)
       return response.data
     } catch (error) {
       console.error("Erro ao criar usuário:", error)
@@ -89,20 +119,18 @@ export const usuarioService = {
   },
 
   atualizarUsuario: async (id: number, usuario: any) => {
-    // Se a senha estiver vazia, remova-a do objeto para não sobrescrever a senha existente
-    if (usuario.senha === "") {
-      const { senha, ...usuarioSemSenha } = usuario
-      const response = await api.put(`/usuarios/${id}`, usuarioSemSenha)
+    try {
+      const response = await apiClient.put(`/usuarios/${id}`, usuario)
       return response.data
-    } else {
-      const response = await api.put(`/usuarios/${id}`, usuario)
-      return response.data
+    } catch (error) {
+      console.error(`Erro ao atualizar usuário ${id}:`, error)
+      throw error
     }
   },
 
   removerUsuario: async (id: number) => {
     try {
-      await api.delete(`/usuarios/${id}`)
+      await apiClient.delete(`/usuarios/${id}`)
     } catch (error) {
       console.error(`Erro ao remover usuário ${id}:`, error)
       throw error
@@ -110,27 +138,70 @@ export const usuarioService = {
   },
 }
 
-// Serviço de autenticação (simplificado por enquanto)
-export const authService = {
-  getCurrentUser: () => {
-    return {
-      id: 1,
-      nome: "Carlos Oliveira",
-      username: "carlos",
-      email: "carlos@oficina.com",
-      senha: "123456",
-      cargo: "Gerente",
-      perfil: "Administrador",
-      status: "Ativo",
+// Serviço de vendas
+export const vendaService = {
+  listarVendas: async () => {
+    try {
+      const response = await apiClient.get("/vendas")
+      return response.data
+    } catch (error) {
+      console.error("Erro ao listar vendas:", error)
+      throw error
     }
   },
 
-  isAuthenticated: () => true,
+  buscarVenda: async (id: number) => {
+    try {
+      const response = await apiClient.get(`/vendas/${id}`)
+      return response.data
+    } catch (error) {
+      console.error(`Erro ao buscar venda ${id}:`, error)
+      throw error
+    }
+  },
 
-  logout: () => {
-    window.location.href = "/login"
+  buscarVendasPorCliente: async (cliente: string) => {
+    try {
+      const response = await apiClient.get(`/vendas/cliente/${cliente}`)
+      return response.data
+    } catch (error) {
+      console.error(`Erro ao buscar vendas do cliente ${cliente}:`, error)
+      throw error
+    }
+  },
+
+  buscarVendasPorPeriodo: async (inicio: string, fim: string) => {
+    try {
+      const response = await apiClient.get(`/vendas/periodo?inicio=${inicio}&fim=${fim}`)
+      return response.data
+    } catch (error) {
+      console.error(`Erro ao buscar vendas por período:`, error)
+      throw error
+    }
+  },
+
+  registrarVenda: async (venda: any) => {
+    try {
+      const response = await apiClient.post("/vendas", venda)
+      return response.data
+    } catch (error) {
+      console.error("Erro ao registrar venda:", error)
+      throw error
+    }
+  },
+
+  cancelarVenda: async (id: number) => {
+    try {
+      await apiClient.delete(`/vendas/${id}`)
+    } catch (error) {
+      console.error(`Erro ao cancelar venda ${id}:`, error)
+      throw error
+    }
   },
 }
 
-export default api
+export default apiClient
+
+// Adicionar a exportação do serviço de fila
+export { filaService }
 

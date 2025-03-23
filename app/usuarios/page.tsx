@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Edit, Trash, Shield, User, AlertCircle, RefreshCw } from "lucide-react"
-import { usuarioService } from "@/services/api"
+import usuarioService from "@/services/usuarioService"
 import { useToast } from "@/components/ui/use-toast"
 import { UsuarioForm } from "@/components/usuario/UsuarioForm"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -212,11 +212,11 @@ export default function UsuariosPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[50px]">ID</TableHead>
+                <TableHead className="hidden md:table-cell w-[50px]">ID</TableHead>
                 <TableHead>Nome</TableHead>
-                <TableHead>Usuário</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Cargo</TableHead>
+                <TableHead className="hidden md:table-cell">Usuário</TableHead>
+                <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead className="hidden md:table-cell">Cargo</TableHead>
                 <TableHead>Perfil</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -225,11 +225,16 @@ export default function UsuariosPage() {
             <TableBody>
               {displayUsuarios.map((usuario) => (
                 <TableRow key={usuario.id}>
-                  <TableCell>{usuario.id}</TableCell>
-                  <TableCell className="font-medium">{usuario.nome}</TableCell>
-                  <TableCell>{usuario.username}</TableCell>
-                  <TableCell>{usuario.email}</TableCell>
-                  <TableCell>{usuario.cargo}</TableCell>
+                  <TableCell className="hidden md:table-cell">{usuario.id}</TableCell>
+                  <TableCell className="font-medium">
+                    {usuario.nome}
+                    <div className="md:hidden text-xs text-muted-foreground mt-1">
+                      {usuario.username} • {usuario.email}
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{usuario.username}</TableCell>
+                  <TableCell className="hidden md:table-cell">{usuario.email}</TableCell>
+                  <TableCell className="hidden md:table-cell">{usuario.cargo}</TableCell>
                   <TableCell>
                     <div className="flex items-center">
                       {usuario.perfil === "Administrador" ? (

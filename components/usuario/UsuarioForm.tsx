@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { usuarioService } from "@/services/api"
+import usuarioService from "@/services/usuarioService"
 import { useToast } from "@/components/ui/use-toast"
 
 interface Usuario {

@@ -20,6 +20,7 @@ export default function VendasPage() {
       setError(null)
       try {
         const data = await vendaService.listarVendas()
+        console.log("Vendas carregadas:", data) // Log para depuração
         setVendas(data)
       } catch (err) {
         console.error("Erro ao carregar vendas:", err)

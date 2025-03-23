@@ -9,17 +9,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
-import { Package } from 'lucide-react'
-import { authService } from "@/services/api"
+import { Package, AlertCircle } from "lucide-react"
+import authService from "@/services/authService"
 
 export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [formData, setFormData] = useState({
-    username: "",
-    senha: "",
+    username: "admin", // Credencial padrão que deve funcionar
+    senha: "admin123",
   })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -29,27 +30,30 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
 
     try {
-      const response = await authService.login({
-        username: formData.username,
-        senha: formData.senha,
-      })
-
-      localStorage.setItem("token", response.data.token)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
+      console.log("Iniciando login com username:", formData.username)
+      await authService.login(formData)
 
       toast({
         title: "Login realizado com sucesso",
         description: "Bem-vindo ao Sistema de Gestão",
       })
 
+      // Verificar se o token foi armazenado corretamente
+      if (!localStorage.getItem("token")) {
+        throw new Error("Falha ao armazenar o token. Tente novamente.")
+      }
+
+      // Redirecionar para a página inicial
       router.push("/")
     } catch (error: any) {
       console.error("Erro ao fazer login:", error)
+      setError(error?.message || error?.response?.data || "Nome de usuário ou senha incorretos. Tente novamente.")
       toast({
         title: "Erro de autenticação",
-        description: error?.response?.data?.message || "Usuário ou senha incorretos. Tente novamente.",
+        description: error?.message || error?.response?.data || "Nome de usuário ou senha incorretos. Tente novamente.",
         variant: "destructive",
       })
     } finally {
@@ -68,13 +72,21 @@ export default function LoginPage() {
           <CardDescription className="text-center">Entre com suas credenciais para acessar o sistema</CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="bg-destructive/10 p-3 rounded-md mb-4 flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Usuário</Label>
+              <Label htmlFor="username">Nome de Usuário</Label>
               <Input
                 id="username"
                 name="username"
-                placeholder="seu.usuario"
+                type="text"
+                placeholder="Seu nome de usuário"
                 value={formData.username}
                 onChange={handleChange}
                 required
@@ -104,10 +116,12 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="flex flex-col">
           <p className="text-center text-sm text-muted-foreground mt-2">
-            Para fins de demonstração, use qualquer usuário e senha.
+            Para fins de demonstração, use: admin / admin123
           </p>
+          <p className="text-center text-sm text-muted-foreground mt-1">Ou: carlos / 123456</p>
         </CardFooter>
       </Card>
     </div>
   )
 }
+

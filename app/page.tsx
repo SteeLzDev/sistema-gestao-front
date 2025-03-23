@@ -77,11 +77,19 @@ export default function Home() {
           </div>
 
           <Tabs defaultValue="estoque" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="estoque">Estoque</TabsTrigger>
-              <TabsTrigger value="vendas">Vendas</TabsTrigger>
-              <TabsTrigger value="clientes">Fila de Clientes</TabsTrigger>
-              <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
+            <TabsList className="w-full flex overflow-x-auto">
+              <TabsTrigger value="estoque" className="flex-1">
+                Estoque
+              </TabsTrigger>
+              <TabsTrigger value="vendas" className="flex-1">
+                Vendas
+              </TabsTrigger>
+              <TabsTrigger value="clientes" className="flex-1">
+                Fila
+              </TabsTrigger>
+              <TabsTrigger value="relatorios" className="flex-1">
+                Relatórios
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="estoque" className="space-y-4">
               <Card>

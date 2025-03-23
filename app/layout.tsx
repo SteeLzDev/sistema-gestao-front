@@ -1,5 +1,4 @@
 import type React from "react"
-import { ThemeProvider } from "@/components/ui/theme-provider"
 import { Toast } from "@/components/ui/toast"
 import { ToastProvider } from "@/components/ui/toast"
 import { cn } from "@/lib/utils"
@@ -10,6 +9,9 @@ import Link from "next/link"
 import { BarChart, Package, Users, ClipboardList, Settings, Home } from "lucide-react"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 import { UserMenu } from "@/components/layout/UserMenu"
+import { MobileNav } from "@/components/layout/MobileNav"
+import { ThemeProvider } from "next-themes"
+import { MobileTabNav } from "@/components/layout/MobileTabNav"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,7 +31,8 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ToastProvider>
             <ProtectedRoute>
-              <div className="flex min-h-screen">
+              <div className="flex min-h-screen flex-col md:flex-row">
+                {/* Sidebar para desktop */}
                 <aside className="hidden md:flex w-64 flex-col border-r bg-muted/40">
                   <div className="flex h-14 items-center border-b px-4">
                     <Link href="/" className="flex items-center gap-2 font-semibold">
@@ -97,7 +100,18 @@ export default function RootLayout({
                     <UserMenu />
                   </div>
                 </aside>
-                <div className="flex-1 flex flex-col">{children}</div>
+
+                {/* Conteúdo principal */}
+                <div className="flex-1 flex flex-col">
+                  {/* Cabeçalho móvel */}
+                  <MobileNav />
+
+                  {/* Conteúdo da página */}
+                  <main className="flex-1 pb-16 md:pb-0">{children}</main>
+
+                  {/* Navegação por abas em dispositivos móveis */}
+                  <MobileTabNav />
+                </div>
               </div>
             </ProtectedRoute>
             <Toast />

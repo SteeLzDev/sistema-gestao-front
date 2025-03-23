@@ -81,7 +81,7 @@ export default function RelatoriosPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Faturamento Total</CardTitle>
@@ -133,11 +133,19 @@ export default function RelatoriosPage() {
       </div>
 
       <Tabs defaultValue="diario" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="diario">Diário</TabsTrigger>
-          <TabsTrigger value="semanal">Semanal</TabsTrigger>
-          <TabsTrigger value="mensal">Mensal</TabsTrigger>
-          <TabsTrigger value="anual">Anual</TabsTrigger>
+        <TabsList className="w-full flex overflow-x-auto">
+          <TabsTrigger value="diario" className="flex-1">
+            Diário
+          </TabsTrigger>
+          <TabsTrigger value="semanal" className="flex-1">
+            Semanal
+          </TabsTrigger>
+          <TabsTrigger value="mensal" className="flex-1">
+            Mensal
+          </TabsTrigger>
+          <TabsTrigger value="anual" className="flex-1">
+            Anual
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="diario" className="space-y-4">
           <Card>

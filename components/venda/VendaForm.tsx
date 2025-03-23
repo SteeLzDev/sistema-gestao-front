@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { produtoService } from "@/services/api"
+import produtoService from "@/services/produtoService"
+import vendaService from "@/services/vendaService"
 import { useToast } from "@/components/ui/use-toast"
 import { Plus, Trash } from "lucide-react"
 
@@ -158,40 +159,37 @@ export function VendaForm({ onSuccess, onCancel }: VendaFormProps) {
     setLoading(true)
 
     try {
-      // Aqui você chamaria o serviço para registrar a venda
-      // await vendaService.criarVenda({ cliente, itens, total: calcularTotal() })
+      const venda = {
+        cliente,
+        itens: itens.map((item) => ({
+          produtoId: item.produtoId,
+          quantidade: item.quantidade,
+        })),
+      }
 
-      // Simulando o registro da venda
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await vendaService.registrarVenda(venda)
 
       toast({
         title: "Sucesso",
         description: "Venda registrada com sucesso.",
       })
       onSuccess()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao registrar venda:", error)
+
+      // Mensagem de erro mais amigável
+      const errorMessage =
+        error.message || "Não foi possível registrar a venda. Verifique sua conexão e tente novamente."
+
       toast({
         title: "Erro",
-        description: "Não foi possível registrar a venda.",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
       setLoading(false)
     }
   }
-
-  // Dados de exemplo para desenvolvimento
-  const produtosExemplo = [
-    { id: 1, codigo: "001", nome: "Óleo de Motor", preco: 35.9, quantidade: 25 },
-    { id: 2, codigo: "002", nome: "Filtro de Ar", preco: 22.5, quantidade: 18 },
-    { id: 3, codigo: "003", nome: "Pastilha de Freio", preco: 89.9, quantidade: 12 },
-    { id: 4, codigo: "004", nome: "Lâmpada de Farol", preco: 15.0, quantidade: 30 },
-    { id: 5, codigo: "005", nome: "Bateria 60Ah", preco: 350.0, quantidade: 8 },
-  ]
-
-  // Usar dados de exemplo se a API não retornar dados
-  const displayProdutos = produtos.length > 0 ? produtos : produtosExemplo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -207,7 +205,7 @@ export function VendaForm({ onSuccess, onCancel }: VendaFormProps) {
       </div>
 
       <div className="grid grid-cols-12 gap-2 items-end">
-        <div className="col-span-6">
+        <div className="col-span-12 md:col-span-6">
           <Label htmlFor="produto">Produto</Label>
           <Select
             value={selectedProdutoId?.toString() || ""}
@@ -217,7 +215,7 @@ export function VendaForm({ onSuccess, onCancel }: VendaFormProps) {
               <SelectValue placeholder="Selecione um produto" />
             </SelectTrigger>
             <SelectContent>
-              {displayProdutos.map((produto) => (
+              {produtos.map((produto) => (
                 <SelectItem key={produto.id} value={produto.id.toString()}>
                   {produto.nome} - R$ {produto.preco.toFixed(2)}
                 </SelectItem>
@@ -226,7 +224,7 @@ export function VendaForm({ onSuccess, onCancel }: VendaFormProps) {
           </Select>
         </div>
 
-        <div className="col-span-3">
+        <div className="col-span-6 md:col-span-3">
           <Label htmlFor="quantidade">Quantidade</Label>
           <Input
             id="quantidade"
@@ -238,7 +236,7 @@ export function VendaForm({ onSuccess, onCancel }: VendaFormProps) {
           />
         </div>
 
-        <div className="col-span-3">
+        <div className="col-span-6 md:col-span-3">
           <Button type="button" onClick={handleAddItem} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
             Adicionar
@@ -246,12 +244,12 @@ export function VendaForm({ onSuccess, onCancel }: VendaFormProps) {
         </div>
       </div>
 
-      <div className="border rounded-md">
+      <div className="border rounded-md overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Produto</TableHead>
-              <TableHead className="text-right">Preço Unit.</TableHead>
+              <TableHead className="hidden sm:table-cell text-right">Preço Unit.</TableHead>
               <TableHead className="text-right">Qtd</TableHead>
               <TableHead className="text-right">Subtotal</TableHead>
               <TableHead className="w-[50px]"></TableHead>
@@ -267,8 +265,13 @@ export function VendaForm({ onSuccess, onCancel }: VendaFormProps) {
             ) : (
               itens.map((item, index) => (
                 <TableRow key={index}>
-                  <TableCell>{item.produtoNome}</TableCell>
-                  <TableCell className="text-right">R$ {item.precoUnitario.toFixed(2)}</TableCell>
+                  <TableCell>
+                    {item.produtoNome}
+                    <div className="sm:hidden text-xs text-muted-foreground mt-1">
+                      R$ {item.precoUnitario.toFixed(2)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell text-right">R$ {item.precoUnitario.toFixed(2)}</TableCell>
                   <TableCell className="text-right">{item.quantidade}</TableCell>
                   <TableCell className="text-right">R$ {item.subtotal.toFixed(2)}</TableCell>
                   <TableCell>
@@ -283,13 +286,13 @@ export function VendaForm({ onSuccess, onCancel }: VendaFormProps) {
         </Table>
       </div>
 
-      <div className="flex justify-between items-center pt-4">
-        <div className="text-lg font-bold">Total: R$ {calcularTotal().toFixed(2)}</div>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+      <div className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-4">
+        <div className="text-lg font-bold order-2 sm:order-1">Total: R$ {calcularTotal().toFixed(2)}</div>
+        <div className="flex gap-2 w-full sm:w-auto order-1 sm:order-2">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading} className="flex-1 sm:flex-auto">
             Cancelar
           </Button>
-          <Button type="submit" disabled={loading || itens.length === 0}>
+          <Button type="submit" disabled={loading || itens.length === 0} className="flex-1 sm:flex-auto">
             {loading ? "Registrando..." : "Finalizar Venda"}
           </Button>
         </div>

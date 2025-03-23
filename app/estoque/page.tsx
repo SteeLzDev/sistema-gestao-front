@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, Edit, Trash, AlertCircle, Search, Filter } from "lucide-react"
-import { produtoService } from "@/services/api"
+import produtoService from "@/services/produtoService"
 import { useToast } from "@/components/ui/use-toast"
 import { ProdutoForm } from "@/components/produto/ProdutoForm"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -21,7 +21,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 interface Produto {
   id: number
@@ -227,7 +235,7 @@ export default function EstoquePage() {
                 </Select>
               </div>
               <div className="flex items-end">
-                <Button variant="outline" onClick={handleClearFilters}>
+                <Button variant="outline" onClick={handleClearFilters} className="w-full md:w-auto">
                   Limpar Filtros
                 </Button>
               </div>
@@ -258,9 +266,9 @@ export default function EstoquePage() {
                   <TableRow>
                     <TableHead className="w-[100px]">Código</TableHead>
                     <TableHead>Nome do Produto</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead className="text-right">Quantidade</TableHead>
-                    <TableHead className="text-right">Preço Unit.</TableHead>
+                    <TableHead className="hidden md:table-cell">Categoria</TableHead>
+                    <TableHead className="hidden md:table-cell text-right">Quantidade</TableHead>
+                    <TableHead className="hidden md:table-cell text-right">Preço Unit.</TableHead>
                     <TableHead className="text-center w-[120px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -268,10 +276,15 @@ export default function EstoquePage() {
                   {paginatedProdutos.map((produto) => (
                     <TableRow key={produto.id}>
                       <TableCell className="font-medium">{produto.codigo}</TableCell>
-                      <TableCell>{produto.nome}</TableCell>
-                      <TableCell>{produto.categoria}</TableCell>
-                      <TableCell className="text-right">{produto.quantidade}</TableCell>
-                      <TableCell className="text-right">R$ {produto.preco.toFixed(2)}</TableCell>
+                      <TableCell>
+                        {produto.nome}
+                        <div className="md:hidden text-xs text-muted-foreground mt-1">
+                          {produto.categoria} • {produto.quantidade} un. • R$ {produto.preco.toFixed(2)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{produto.categoria}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">{produto.quantidade}</TableCell>
+                      <TableCell className="hidden md:table-cell text-right">R$ {produto.preco.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex justify-center gap-2">
                           <Button size="icon" variant="ghost" onClick={() => handleEditClick(produto)}>

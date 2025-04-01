@@ -1,97 +1,86 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { UserMenu } from "@/components/layout/UserMenu"
-import { BarChart, Package, Users, ClipboardList, Settings, Home, Menu } from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
+import { Package } from "lucide-react"
 
 export function MobileNav() {
   const [open, setOpen] = useState(false)
-  const pathname = usePathname()
-
-  const routes = [
-    {
-      href: "/",
-      label: "Dashboard",
-      icon: Home,
-    },
-    {
-      href: "/estoque",
-      label: "Estoque",
-      icon: Package,
-    },
-    {
-      href: "/vendas",
-      label: "Vendas",
-      icon: BarChart,
-    },
-    {
-      href: "/fila",
-      label: "Fila de Clientes",
-      icon: ClipboardList,
-    },
-    {
-      href: "/relatorios",
-      label: "Relatórios",
-      icon: BarChart,
-    },
-    {
-      href: "/usuarios",
-      label: "Usuários",
-      icon: Users,
-    },
-    {
-      href: "/configuracoes",
-      label: "Configurações",
-      icon: Settings,
-    },
-  ]
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background md:hidden">
-      <div className="flex h-14 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Package className="h-6 w-6" />
-          <span>Sistema de Gestão</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[240px] sm:w-[300px]">
-              <div className="flex flex-col h-full">
-                <div className="px-2 py-4">
-                  <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Menu Principal</h2>
-                  <div className="space-y-1">
-                    {routes.map((route) => (
-                      <Link
-                        key={route.href}
-                        href={route.href}
-                        onClick={() => setOpen(false)}
-                        className={`flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-all hover:text-foreground hover:bg-muted ${
-                          pathname === route.href ? "bg-muted text-foreground" : "text-muted-foreground"
-                        }`}
-                      >
-                        <route.icon className="h-4 w-4" />
-                        {route.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-auto p-4 border-t">
-                  <UserMenu />
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
+    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 md:hidden">
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" className="shrink-0">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex flex-col">
+          <div className="flex items-center border-b py-4">
+            <Package className="mr-2 h-6 w-6" />
+            <span className="text-lg font-semibold">Sistema de Gestão</span>
+          </div>
+          <nav className="flex-1 overflow-auto py-4">
+            <div className="grid gap-2 px-2">
+              <Link
+                href="/"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/estoque"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                Estoque
+              </Link>
+              <Link
+                href="/vendas"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                Vendas
+              </Link>
+              <Link
+                href="/fila"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                Fila de Clientes
+              </Link>
+              <Link
+                href="/relatorios"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                Relatórios
+              </Link>
+              <Link
+                href="/usuarios"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                Usuários
+              </Link>
+              <Link
+                href="/configuracoes"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground"
+                onClick={() => setOpen(false)}
+              >
+                Configurações
+              </Link>
+            </div>
+          </nav>
+        </SheetContent>
+      </Sheet>
+      <div className="flex-1">
+        <h1 className="text-lg font-semibold">Sistema de Gestão</h1>
       </div>
     </header>
   )

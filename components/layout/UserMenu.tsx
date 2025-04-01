@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -10,43 +10,43 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import authService from "@/services/authService"
 import { LogOut, Settings, User } from "lucide-react"
 
 export function UserMenu() {
-  const [user, setUser] = useState<any>(null)
-
-  useEffect(() => {
-    const currentUser = authService.getCurrentUser()
-    setUser(currentUser)
-  }, [])
-
-  const handleLogout = () => {
-    authService.logout()
+  // Em um cenário real, você obteria essas informações do seu estado de autenticação
+  const user = {
+    name: "Administrador",
+    email: "admin@sistema.com",
+    image: "/placeholder.svg?height=32&width=32",
   }
 
-  if (!user) return null
+  const handleLogout = () => {
+    // Lógica de logout
+    localStorage.removeItem("token")
+    window.location.href = "/login"
+  }
 
   return (
     <DropdownMenu>
-      {/* Aqui está a correção: usar asChild para que o Button seja o elemento de trigger */}
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2 rounded-lg w-full">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            {user.nome
-              .split(" ")
-              .map((n: string) => n[0])
-              .slice(0, 2)
-              .join("")}
-          </div>
-          <div className="flex-1 truncate text-left">
-            <div className="text-sm font-medium">{user.nome}</div>
-            <div className="text-xs text-muted-foreground">{user.perfil}</div>
+        <Button variant="ghost" className="relative h-8 w-full justify-start gap-2 rounded-full px-2">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user.image} alt={user.name} />
+            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col items-start text-sm">
+            <span className="font-medium">{user.name}</span>
+            <span className="text-xs text-muted-foreground">{user.email}</span>
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{user.name}</p>
+            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           <User className="mr-2 h-4 w-4" />

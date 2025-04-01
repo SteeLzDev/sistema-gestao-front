@@ -1,268 +1,216 @@
-import { Button } from "@/components/ui/button"
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BarChart, Users, Package, ClipboardList, Calendar } from "lucide-react"
+import { DollarSign, Users, Package, ClipboardList, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Overview } from "@/components/dashboard/overview"
+import { RecentSales } from "@/components/dashboard/recent-sales"
+import { InventoryStatus } from "@/components/dashboard/inventory-status"
+import { ServiceQueue } from "@/components/dashboard/service-queue"
+import { useToast } from "@/components/ui/use-toast"
 
-export default function Home() {
+// Dados simulados para o dashboard
+const mockData = {
+  totalSales: 12890.75,
+  salesGrowth: 14.5,
+  totalCustomers: 342,
+  customersGrowth: 7.2,
+  totalProducts: 189,
+  lowStockProducts: 12,
+  queueWaiting: 8,
+  queueInService: 3,
+}
+
+export default function DashboardPage() {
+  const [data, setData] = useState(mockData)
+  const [loading, setLoading] = useState(true)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    // Simulação de carregamento de dados da API
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        // Em um cenário real, você faria uma chamada à API aqui
+        // const response = await fetch('/api/dashboard')
+        // const data = await response.json()
+
+        // Simulando um atraso de rede
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        // Usando dados simulados por enquanto
+        setData(mockData)
+      } catch (error) {
+        console.error("Erro ao carregar dados do dashboard:", error)
+        toast({
+          title: "Erro ao carregar dados",
+          description: "Não foi possível carregar os dados do dashboard. Tente novamente mais tarde.",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [toast])
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <h1 className="text-xl font-bold">Sistema de Gestão</h1>
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm">
-              <Users className="mr-2 h-4 w-4" />
-              Admin
-            </Button>
-          </div>
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <div className="flex items-center gap-2">
+          <Button variant="outline">Download Relatório</Button>
+          <Button>Atualizar Dados</Button>
         </div>
-      </header>
-      <main className="flex-1 container py-6">
-        <div className="grid gap-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-            <div className="flex items-center gap-2">
-              <Button>
-                <Package className="mr-2 h-4 w-4" />
-                Novo Produto
-              </Button>
-              <Button variant="outline">
-                <ClipboardList className="mr-2 h-4 w-4" />
-                Nova Venda
-              </Button>
-            </div>
-          </div>
+      </div>
 
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="sales">Vendas</TabsTrigger>
+          <TabsTrigger value="inventory">Estoque</TabsTrigger>
+          <TabsTrigger value="queue">Fila</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Vendas Hoje</CardTitle>
-                <BarChart className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Vendas Totais</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">R$ 1.250,00</div>
-                <p className="text-xs text-muted-foreground">+12% em relação a ontem</p>
+                <div className="text-2xl font-bold">
+                  {loading ? "..." : `R$ ${data.totalSales.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {data.salesGrowth > 0 ? (
+                    <span className="flex items-center text-green-600">
+                      <ArrowUpRight className="mr-1 h-4 w-4" />+{data.salesGrowth}% em relação ao mês anterior
+                    </span>
+                  ) : (
+                    <span className="flex items-center text-red-600">
+                      <ArrowDownRight className="mr-1 h-4 w-4" />
+                      {data.salesGrowth}% em relação ao mês anterior
+                    </span>
+                  )}
+                </p>
               </CardContent>
             </Card>
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Produtos em Estoque</CardTitle>
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">145</div>
-                <p className="text-xs text-muted-foreground">8 produtos com estoque baixo</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Clientes na Fila</CardTitle>
+                <CardTitle className="text-sm font-medium">Clientes</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">Tempo médio: 15 min</p>
+                <div className="text-2xl font-bold">{loading ? "..." : data.totalCustomers}</div>
+                <p className="text-xs text-muted-foreground">
+                  {data.customersGrowth > 0 ? (
+                    <span className="flex items-center text-green-600">
+                      <ArrowUpRight className="mr-1 h-4 w-4" />+{data.customersGrowth}% em relação ao mês anterior
+                    </span>
+                  ) : (
+                    <span className="flex items-center text-red-600">
+                      <ArrowDownRight className="mr-1 h-4 w-4" />
+                      {data.customersGrowth}% em relação ao mês anterior
+                    </span>
+                  )}
+                </p>
               </CardContent>
             </Card>
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Serviços Pendentes</CardTitle>
+                <CardTitle className="text-sm font-medium">Produtos</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{loading ? "..." : data.totalProducts}</div>
+                <p className="text-xs text-muted-foreground">
+                  <span className={data.lowStockProducts > 10 ? "text-amber-600" : "text-muted-foreground"}>
+                    {data.lowStockProducts} produtos com estoque baixo
+                  </span>
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Fila de Atendimento</CardTitle>
                 <ClipboardList className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">7</div>
-                <p className="text-xs text-muted-foreground">2 com prazo vencendo hoje</p>
+                <div className="text-2xl font-bold">{loading ? "..." : data.queueWaiting + data.queueInService}</div>
+                <p className="text-xs text-muted-foreground">
+                  {data.queueWaiting} aguardando, {data.queueInService} em atendimento
+                </p>
               </CardContent>
             </Card>
           </div>
 
-          <Tabs defaultValue="estoque" className="space-y-4">
-            <TabsList className="w-full flex overflow-x-auto">
-              <TabsTrigger value="estoque" className="flex-1">
-                Estoque
-              </TabsTrigger>
-              <TabsTrigger value="vendas" className="flex-1">
-                Vendas
-              </TabsTrigger>
-              <TabsTrigger value="clientes" className="flex-1">
-                Fila
-              </TabsTrigger>
-              <TabsTrigger value="relatorios" className="flex-1">
-                Relatórios
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="estoque" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Controle de Estoque</CardTitle>
-                  <CardDescription>Gerencie os produtos disponíveis na sua oficina/mercado.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="rounded-md border">
-                    <div className="grid grid-cols-5 p-4 font-medium">
-                      <div>Código</div>
-                      <div>Nome</div>
-                      <div>Categoria</div>
-                      <div>Quantidade</div>
-                      <div>Preço</div>
-                    </div>
-                    <div className="divide-y">
-                      {[
-                        { id: "001", nome: "Óleo de Motor", categoria: "Automotivo", qtd: 25, preco: "R$ 35,90" },
-                        { id: "002", nome: "Filtro de Ar", categoria: "Automotivo", qtd: 18, preco: "R$ 22,50" },
-                        { id: "003", nome: "Pastilha de Freio", categoria: "Automotivo", qtd: 12, preco: "R$ 89,90" },
-                        { id: "004", nome: "Lâmpada de Farol", categoria: "Automotivo", qtd: 30, preco: "R$ 15,00" },
-                        { id: "005", nome: "Bateria 60Ah", categoria: "Automotivo", qtd: 8, preco: "R$ 350,00" },
-                      ].map((item) => (
-                        <div key={item.id} className="grid grid-cols-5 p-4 hover:bg-muted/50">
-                          <div>{item.id}</div>
-                          <div>{item.nome}</div>
-                          <div>{item.categoria}</div>
-                          <div>{item.qtd}</div>
-                          <div>{item.preco}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="vendas" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Registro de Vendas</CardTitle>
-                  <CardDescription>Visualize e registre novas vendas e serviços.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="rounded-md border">
-                    <div className="grid grid-cols-5 p-4 font-medium">
-                      <div>Nº</div>
-                      <div>Cliente</div>
-                      <div>Itens</div>
-                      <div>Data</div>
-                      <div>Total</div>
-                    </div>
-                    <div className="divide-y">
-                      {[
-                        { id: "V001", cliente: "João Silva", itens: 3, data: "10/03/2025", total: "R$ 145,80" },
-                        { id: "V002", cliente: "Maria Oliveira", itens: 1, data: "10/03/2025", total: "R$ 350,00" },
-                        { id: "V003", cliente: "Carlos Santos", itens: 5, data: "09/03/2025", total: "R$ 212,50" },
-                        { id: "V004", cliente: "Ana Pereira", itens: 2, data: "09/03/2025", total: "R$ 125,90" },
-                        { id: "V005", cliente: "Roberto Lima", itens: 4, data: "08/03/2025", total: "R$ 415,30" },
-                      ].map((venda) => (
-                        <div key={venda.id} className="grid grid-cols-5 p-4 hover:bg-muted/50">
-                          <div>{venda.id}</div>
-                          <div>{venda.cliente}</div>
-                          <div>{venda.itens}</div>
-                          <div>{venda.data}</div>
-                          <div>{venda.total}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="clientes" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Fila de Atendimento</CardTitle>
-                  <CardDescription>Gerencie a fila de clientes aguardando atendimento.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="rounded-md border">
-                    <div className="grid grid-cols-5 p-4 font-medium">
-                      <div>Posição</div>
-                      <div>Nome</div>
-                      <div>Serviço</div>
-                      <div>Chegada</div>
-                      <div>Ações</div>
-                    </div>
-                    <div className="divide-y">
-                      {[
-                        { pos: 1, nome: "Pedro Alves", servico: "Troca de Óleo", chegada: "09:15" },
-                        { pos: 2, nome: "Juliana Costa", servico: "Revisão Geral", chegada: "09:30" },
-                        { pos: 3, nome: "Marcos Souza", servico: "Troca de Pneus", chegada: "09:45" },
-                      ].map((cliente, index) => (
-                        <div key={index} className="grid grid-cols-5 p-4 hover:bg-muted/50">
-                          <div>{cliente.pos}</div>
-                          <div>{cliente.nome}</div>
-                          <div>{cliente.servico}</div>
-                          <div>{cliente.chegada}</div>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
-                              Atender
-                            </Button>
-                            <Button size="sm" variant="destructive">
-                              Remover
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <Button>Adicionar Cliente</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="relatorios" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatórios Financeiros</CardTitle>
-                  <CardDescription>Visualize o desempenho financeiro por período.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex gap-4">
-                    <Button variant="outline">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Diário
-                    </Button>
-                    <Button variant="outline">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Semanal
-                    </Button>
-                    <Button variant="outline">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Mensal
-                    </Button>
-                    <Button variant="outline">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Anual
-                    </Button>
-                  </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="col-span-4">
+              <CardHeader>
+                <CardTitle>Visão Geral</CardTitle>
+                <CardDescription>Vendas mensais do ano atual</CardDescription>
+              </CardHeader>
+              <CardContent className="pl-2">
+                <Overview />
+              </CardContent>
+            </Card>
 
-                  <div className="h-[300px] w-full rounded-md border p-4">
-                    <div className="text-center text-sm text-muted-foreground">
-                      Gráfico de vendas seria exibido aqui
-                    </div>
-                    <div className="mt-2 grid grid-cols-7 gap-2 text-center text-sm">
-                      {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((dia) => (
-                        <div key={dia} className="flex flex-col items-center">
-                          <div>{dia}</div>
-                          <div className="mt-1 h-24 w-full bg-primary/10 relative">
-                            <div
-                              className="absolute bottom-0 left-0 right-0 bg-primary"
-                              style={{
-                                height: `${Math.floor(Math.random() * 100)}%`,
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 text-center">
-                      <div className="text-lg font-bold">Total da semana: R$ 5.842,50</div>
-                      <div className="text-sm text-muted-foreground">4 - 10 Março, 2025</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle>Vendas Recentes</CardTitle>
+                <CardDescription>Últimas 5 vendas realizadas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RecentSales />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="sales" className="space-y-4">
+          <Card className="col-span-4">
+            <CardHeader>
+              <CardTitle>Vendas Detalhadas</CardTitle>
+              <CardDescription>Análise detalhada de vendas por período</CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2">
+              <Overview />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="inventory" className="space-y-4">
+          <Card className="col-span-4">
+            <CardHeader>
+              <CardTitle>Status do Estoque</CardTitle>
+              <CardDescription>Produtos com estoque baixo e mais vendidos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <InventoryStatus />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="queue" className="space-y-4">
+          <Card className="col-span-4">
+            <CardHeader>
+              <CardTitle>Fila de Atendimento</CardTitle>
+              <CardDescription>Clientes aguardando e em atendimento</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ServiceQueue />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

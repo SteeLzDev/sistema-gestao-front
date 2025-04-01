@@ -8,19 +8,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/components/ui/use-toast"
-import { Package, AlertCircle } from "lucide-react"
-import authService from "@/services/authService"
+import { Package } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    username: "admin", // Credencial padrão que deve funcionar
-    senha: "admin123",
+    email: "",
+    password: "",
   })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -29,97 +25,72 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
+    setIsLoading(true)
 
     try {
-      console.log("Iniciando login com username:", formData.username)
-      await authService.login(formData)
+      // Simulando autenticação - em produção, faça uma chamada à API
+      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo ao Sistema de Gestão",
-      })
+      // Armazenar token (simulado)
+      localStorage.setItem("token", "fake-token-for-development")
 
-      // Verificar se o token foi armazenado corretamente
-      if (!localStorage.getItem("token")) {
-        throw new Error("Falha ao armazenar o token. Tente novamente.")
-      }
-
-      // Redirecionar para a página inicial
+      // Redirecionar para o dashboard
       router.push("/")
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao fazer login:", error)
-      setError(error?.message || error?.response?.data || "Nome de usuário ou senha incorretos. Tente novamente.")
-      toast({
-        title: "Erro de autenticação",
-        description: error?.message || error?.response?.data || "Nome de usuário ou senha incorretos. Tente novamente.",
-        variant: "destructive",
-      })
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/40">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
-            <Package className="h-12 w-12 text-primary" />
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+      <Card className="mx-auto max-w-sm">
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex justify-center mb-2">
+            <Package className="h-10 w-10" />
           </div>
-          <CardTitle className="text-2xl text-center">Sistema de Gestão</CardTitle>
-          <CardDescription className="text-center">Entre com suas credenciais para acessar o sistema</CardDescription>
+          <CardTitle className="text-2xl font-bold">Sistema de Gestão</CardTitle>
+          <CardDescription>Entre com suas credenciais para acessar o sistema</CardDescription>
         </CardHeader>
-        <CardContent>
-          {error && (
-            <div className="bg-destructive/10 p-3 rounded-md mb-4 flex items-start gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-              <p className="text-sm text-destructive">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Nome de Usuário</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
-                name="username"
-                type="text"
-                placeholder="Seu nome de usuário"
-                value={formData.username}
+                id="email"
+                name="email"
+                type="email"
+                placeholder="exemplo@email.com"
+                value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="senha">Senha</Label>
-                <a href="#" className="text-sm text-primary hover:underline">
+                <Label htmlFor="password">Senha</Label>
+                <Button variant="link" className="h-auto p-0 text-sm" type="button">
                   Esqueceu a senha?
-                </a>
+                </Button>
               </div>
               <Input
-                id="senha"
-                name="senha"
+                id="password"
+                name="password"
                 type="password"
                 placeholder="••••••••"
-                value={formData.senha}
+                value={formData.password}
                 onChange={handleChange}
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Entrando..." : "Entrar"}
+          </CardContent>
+          <CardFooter className="flex flex-col">
+            <Button className="w-full" type="submit" disabled={isLoading}>
+              {isLoading ? "Entrando..." : "Entrar"}
             </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col">
-          <p className="text-center text-sm text-muted-foreground mt-2">
-            Para fins de demonstração, use: admin / admin123
-          </p>
-          <p className="text-center text-sm text-muted-foreground mt-1">Ou: carlos / 123456</p>
-        </CardFooter>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   )

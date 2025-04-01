@@ -1,7 +1,7 @@
 "use client"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { AvatarWithFallback } from "@/components/ui/avatar-fallback"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +17,6 @@ export function UserMenu() {
   const user = {
     name: "Administrador",
     email: "admin@sistema.com",
-    image: "/placeholder.svg?height=32&width=32",
   }
 
   const handleLogout = () => {
@@ -30,10 +29,7 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-full justify-start gap-2 rounded-full px-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user.image} alt={user.name} />
-            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-          </Avatar>
+          <AvatarWithFallback name={user.name} className="h-8 w-8" />
           <div className="flex flex-col items-start text-sm">
             <span className="font-medium">{user.name}</span>
             <span className="text-xs text-muted-foreground">{user.email}</span>

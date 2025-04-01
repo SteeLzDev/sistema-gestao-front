@@ -10,8 +10,9 @@ import { RecentSales } from "@/components/dashboard/recent-sales"
 import { InventoryStatus } from "@/components/dashboard/inventory-status"
 import { ServiceQueue } from "@/components/dashboard/service-queue"
 import { useToast } from "@/components/ui/use-toast"
+import { dashboardService, type DashboardData } from "@/services/dashboardService"
 
-// Dados simulados para o dashboard
+// Dados mockados como fallback
 const mockData = {
   totalSales: 12890.75,
   salesGrowth: 14.5,
@@ -24,38 +25,36 @@ const mockData = {
 }
 
 export default function DashboardPage() {
-  const [data, setData] = useState(mockData)
+  const [data, setData] = useState<DashboardData>(mockData)
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
-  useEffect(() => {
-    // Simulação de carregamento de dados da API
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        // Em um cenário real, você faria uma chamada à API aqui
-        // const response = await fetch('/api/dashboard')
-        // const data = await response.json()
-
-        // Simulando um atraso de rede
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Usando dados simulados por enquanto
-        setData(mockData)
-      } catch (error) {
-        console.error("Erro ao carregar dados do dashboard:", error)
-        toast({
-          title: "Erro ao carregar dados",
-          description: "Não foi possível carregar os dados do dashboard. Tente novamente mais tarde.",
-          variant: "destructive",
-        })
-      } finally {
-        setLoading(false)
-      }
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      const dashboardData = await dashboardService.getDashboardData()
+      setData(dashboardData)
+    } catch (error) {
+      console.error("Erro ao carregar dados do dashboard:", error)
+      toast({
+        title: "Erro ao carregar dados",
+        description: "Não foi possível carregar os dados do dashboard. Usando dados de exemplo.",
+        variant: "destructive",
+      })
+      // Fallback para dados mockados em caso de erro
+      setData(mockData)
+    } finally {
+      setLoading(false)
     }
+  }
 
-    fetchData()
+  useEffect(() => {
+    fetchDashboardData()
   }, [toast])
+
+  const handleRefresh = () => {
+    fetchDashboardData()
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -63,7 +62,7 @@ export default function DashboardPage() {
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex items-center gap-2">
           <Button variant="outline">Download Relatório</Button>
-          <Button>Atualizar Dados</Button>
+          <Button onClick={handleRefresh}>{loading ? "Atualizando..." : "Atualizar Dados"}</Button>
         </div>
       </div>
 

@@ -1,7 +1,6 @@
 import apiClient from "./apiClient"
-
-// Adicionar a importação do serviço de fila
 import filaService from "./filaService"
+import dashboardService from "./dashboardService"
 
 // Serviço de autenticação
 export const authService = {
@@ -200,8 +199,7 @@ export const vendaService = {
   },
 }
 
-export default apiClient
+export { dashboardService, filaService }
 
-// Adicionar a exportação do serviço de fila
-export { filaService }
+export default apiClient
 

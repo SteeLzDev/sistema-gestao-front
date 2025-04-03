@@ -1,285 +1,333 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Header } from "@/components/header-no-theme"
-import { dashboardService, type DashboardData } from "@/services/dashboardService"
-import { formatarData, formatarMoeda } from "@/lib/utils"
-import { AlertCircle, DollarSign, Package, Users } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { ArrowRight, ArrowUpRight, Package, DollarSign, Users, Clock } from 'lucide-react'
 import Link from "next/link"
+import { AvatarWithFallback } from "@/components/ui/avatar-fallback"
+
+// Componentes importados dos arquivos compartilhados
+// import { Overview } from "@/components/dashboard/overview"
+// import { RecentSales } from "@/components/dashboard/recent-sales"
+// import { DashboardQueue } from "@/components/dashboard/dashboard-queue"
+// import { InventoryStatus } from "@/components/dashboard/inventory-status"
+
+// Dados mockados para vendas recentes
+const recentSales = [
+  {
+    id: 1,
+    customer: "João Silva",
+    email: "joao.silva@example.com",
+    amount: 259.99,
+  },
+  {
+    id: 2,
+    customer: "Maria Oliveira",
+    email: "maria.oliveira@example.com",
+    amount: 478.5,
+  },
+  {
+    id: 3,
+    customer: "Pedro Santos",
+    email: "pedro.santos@example.com",
+    amount: 189.9,
+  },
+  {
+    id: 4,
+    customer: "Ana Costa",
+    email: "ana.costa@example.com",
+    amount: 325.75,
+  },
+  {
+    id: 5,
+    customer: "Carlos Ferreira",
+    email: "carlos.ferreira@example.com",
+    amount: 592.3,
+  },
+]
+
+// Dados mockados para produtos com estoque baixo
+const lowStockProducts = [
+  {
+    id: 1,
+    name: "Óleo de Motor 5W30",
+    category: "Lubrificantes",
+    price: 39.9,
+    stock: 3,
+  },
+  {
+    id: 2,
+    name: "Filtro de Ar - Modelo X",
+    category: "Filtros",
+    price: 25.5,
+    stock: 2,
+  },
+  {
+    id: 3,
+    name: "Pastilha de Freio - Modelo Y",
+    category: "Freios",
+    price: 89.9,
+    stock: 4,
+  },
+]
+
+// Dados mockados para clientes na fila
+const queueClients = [
+  {
+    id: 1,
+    nome: "Roda Michelin",
+    servico: "Troca de Marcha",
+    chegada: "04:44",
+    espera: "cerca de 24 horas",
+    status: "Em Atendimento",
+  },
+]
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const dashboardData = await dashboardService.getDashboardData()
-        setData(dashboardData)
-        setError(null)
-      } catch (err) {
-        console.error("Erro ao carregar dados do dashboard:", err)
-        setError("Não foi possível carregar os dados do dashboard. Tente novamente mais tarde.")
-      } finally {
-        setLoading(false)
-      }
-    }
+    // Simulando carregamento de dados
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1500)
 
-    fetchData()
-
-    // Atualizar a cada 5 minutos
-    const interval = setInterval(fetchData, 5 * 60 * 1000)
-    return () => clearInterval(interval)
+    return () => clearTimeout(timer)
   }, [])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <p>Carregando dados do dashboard...</p>
-        </main>
-      </div>
-    )
-  }
-
-  if (error || !data) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex flex-col items-center justify-center">
-          <div className="bg-red-50 p-4 rounded-md text-red-600 max-w-md text-center">
-            <AlertCircle className="mx-auto mb-2 h-10 w-10" />
-            <p>{error || "Não foi possível carregar os dados do dashboard."}</p>
-          </div>
-        </main>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">
-        <div className="container mx-auto p-4 space-y-6">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Card de Vendas Totais */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Vendas Totais</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">R$ 1,00</div>
+            <p className="text-xs text-muted-foreground flex items-center">
+              <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
+              <span className="text-green-500 font-medium">+14.5%</span> em relação ao mês anterior
+            </p>
+          </CardContent>
+        </Card>
 
-          {/* Cards de resumo */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Vendas Recentes</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatarMoeda(data.vendasRecentes.itens.reduce((acc, item) => acc + item.valorTotal, 0))}
+        {/* Card de Estoque */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Estoque</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1</div>
+            <p className="text-xs text-muted-foreground">0 produtos com estoque baixo</p>
+          </CardContent>
+        </Card>
+
+        {/* Card de Fila de Clientes */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Fila de Clientes</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1</div>
+            <p className="text-xs text-muted-foreground">Clientes aguardando atendimento</p>
+          </CardContent>
+        </Card>
+
+        {/* Card de Vendas Pendentes */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Vendas Pendentes</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">0</div>
+            <p className="text-xs text-muted-foreground">Vendas aguardando finalização</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        {/* Vendas Recentes */}
+        <Card className="lg:col-span-4">
+          <CardHeader>
+            <CardTitle>Vendas Recentes</CardTitle>
+            <CardDescription>As últimas 5 vendas realizadas no sistema.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentSales.map((sale) => (
+                <div key={sale.id} className="flex items-center">
+                  <AvatarWithFallback name={sale.customer} className="h-9 w-9" />
+                  <div className="ml-4 space-y-1">
+                    <p className="text-sm font-medium leading-none">{sale.customer}</p>
+                    <p className="text-sm text-muted-foreground">{sale.email}</p>
+                  </div>
+                  <div className="ml-auto font-medium">
+                    {new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(sale.amount)}
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground">{data.vendasRecentes.total} vendas nos últimos 30 dias</p>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href="/vendas">
+                Ver todas as vendas <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Estoque</CardTitle>
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{data.estoque.total}</div>
-                <p className="text-xs text-muted-foreground">{data.estoque.baixoEstoque} produtos com estoque baixo</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Fila de Atendimento</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{data.fila.aguardando}</div>
-                <p className="text-xs text-muted-foreground">{data.fila.emAtendimento} clientes em atendimento</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Serviços</CardTitle>
-                <AlertCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{data.servicos.pendentes}</div>
-                <p className="text-xs text-muted-foreground">{data.servicos.concluidos} serviços concluídos hoje</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Tabelas de detalhes */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Vendas Recentes */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Vendas Recentes</CardTitle>
-                <CardDescription>As últimas 5 vendas realizadas no sistema.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {data.vendasRecentes.itens.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4">Nenhuma venda recente encontrada.</p>
+        {/* Produtos com Estoque Baixo */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Produtos com Estoque Baixo</CardTitle>
+            <CardDescription>Produtos que precisam ser repostos em breve.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Produto</TableHead>
+                  <TableHead>Preço</TableHead>
+                  <TableHead>Quantidade</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">
+                      Carregando produtos...
+                    </TableCell>
+                  </TableRow>
+                ) : lowStockProducts.length > 0 ? (
+                  lowStockProducts.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell>
+                        {new Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(product.price)}
+                      </TableCell>
+                      <TableCell>{product.stock}</TableCell>
+                    </TableRow>
+                  ))
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Cliente</TableHead>
-                        <TableHead>Data</TableHead>
-                        <TableHead>Valor</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {data.vendasRecentes.itens.map((venda) => (
-                        <TableRow key={venda.id}>
-                          <TableCell>{venda.cliente}</TableCell>
-                          <TableCell>{formatarData(venda.dataHora)}</TableCell>
-                          <TableCell>{formatarMoeda(venda.valorTotal)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">
+                      Nenhum produto com estoque baixo
+                    </TableCell>
+                  </TableRow>
                 )}
-                <div className="mt-4 text-right">
-                  <Link href="/vendas" className="text-sm text-blue-600 hover:underline">
-                    Ver todas as vendas →
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+              </TableBody>
+            </Table>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href="/estoque">
+                Gerenciar estoque <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
 
-            {/* Produtos com Estoque Baixo */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Produtos com Estoque Baixo</CardTitle>
-                <CardDescription>Produtos que precisam ser repostos em breve.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {data.estoque.itens.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4">Nenhum produto com estoque baixo.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Produto</TableHead>
-                        <TableHead>Preço</TableHead>
-                        <TableHead>Quantidade</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {data.estoque.itens.map((produto) => (
-                        <TableRow key={produto.id}>
-                          <TableCell>{produto.nome}</TableCell>
-                          <TableCell>{formatarMoeda(produto.preco)}</TableCell>
-                          <TableCell className="text-red-500 font-medium">{produto.quantidade}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-                <div className="mt-4 text-right">
-                  <Link href="/estoque" className="text-sm text-blue-600 hover:underline">
-                    Gerenciar estoque →
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        {/* Clientes na Fila */}
+        <Card className="lg:col-span-4">
+          <CardHeader>
+            <CardTitle>Clientes na Fila</CardTitle>
+            <CardDescription>Clientes aguardando atendimento.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Serviço</TableHead>
+                  <TableHead>Chegada</TableHead>
+                  <TableHead>Espera</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {queueClients.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell>{client.nome}</TableCell>
+                    <TableCell>{client.servico}</TableCell>
+                    <TableCell>{client.chegada}</TableCell>
+                    <TableCell>{client.espera}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 hover:text-yellow-800">
+                        {client.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href="/fila">
+                Gerenciar fila <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
 
-            {/* Clientes na Fila */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Clientes na Fila</CardTitle>
-                <CardDescription>Clientes aguardando atendimento.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {data.fila.itens.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4">Nenhum cliente na fila de atendimento.</p>
+        {/* Vendas Pendentes */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Vendas Pendentes</CardTitle>
+            <CardDescription>Vendas que precisam ser finalizadas.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">
+                      Carregando vendas...
+                    </TableCell>
+                  </TableRow>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Cliente</TableHead>
-                        <TableHead>Serviço</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {data.fila.itens.map((cliente) => (
-                        <TableRow key={cliente.id}>
-                          <TableCell>{cliente.nome}</TableCell>
-                          <TableCell>{cliente.servico}</TableCell>
-                          <TableCell>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs ${
-                                cliente.status === "AGUARDANDO"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-green-100 text-green-800"
-                              }`}
-                            >
-                              {cliente.status === "AGUARDANDO" ? "Aguardando" : "Em Atendimento"}
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">
+                      Nenhuma venda pendente no momento
+                    </TableCell>
+                  </TableRow>
                 )}
-                <div className="mt-4 text-right">
-                  <Link href="/fila" className="text-sm text-blue-600 hover:underline">
-                    Gerenciar fila →
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Serviços em Andamento */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Serviços em Andamento</CardTitle>
-                <CardDescription>Serviços que estão sendo realizados no momento.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {data.servicos.itens.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-4">Nenhum serviço em andamento.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Cliente</TableHead>
-                        <TableHead>Descrição</TableHead>
-                        <TableHead>Início</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {data.servicos.itens.map((servico) => (
-                        <TableRow key={servico.id}>
-                          <TableCell>{servico.cliente}</TableCell>
-                          <TableCell>{servico.descricao}</TableCell>
-                          <TableCell>{servico.dataInicio ? formatarData(servico.dataInicio) : "N/A"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-                <div className="mt-4 text-right">
-                  <Link href="/servicos" className="text-sm text-blue-600 hover:underline">
-                    Ver todos os serviços →
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
+              </TableBody>
+            </Table>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href="/vendas">
+                Ver todas as vendas <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   )
 }
-

@@ -14,10 +14,12 @@ import { format, formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { useToast } from "@/components/ui/use-toast"
 import { filaService } from "@/services/filaService"
-import { UserPlus, Clock, AlertTriangle } from "lucide-react"
+import { UserPlus, Clock, AlertTriangle, ArrowLeft } from 'lucide-react'
+import { useRouter } from "next/navigation"
 import type { Cliente, Atendimento } from "@/types/fila"
 
 export default function FilaPage() {
+  const router = useRouter()
   const [clientesNaFila, setClientesNaFila] = useState<Cliente[]>([])
   const [clientesEmAtendimento, setClientesEmAtendimento] = useState<Atendimento[]>([])
   const [loading, setLoading] = useState(true)
@@ -171,7 +173,18 @@ export default function FilaPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Fila de Atendimento</h2>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => router.push("/dashboard")} 
+            className="flex items-center gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Voltar para Dashboard</span>
+          </Button>
+          <h2 className="text-3xl font-bold tracking-tight">Fila de Atendimento</h2>
+        </div>
         <Button onClick={carregarFila} variant="outline">
           Atualizar Fila
         </Button>
@@ -411,4 +424,3 @@ export default function FilaPage() {
     </div>
   )
 }
-

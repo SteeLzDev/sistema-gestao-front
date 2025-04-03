@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { createContext, useContext, useEffect, useState } from "react"
 
 type Theme = "dark" | "light" | "system"
@@ -10,9 +9,9 @@ type ThemeProviderProps = {
   children: React.ReactNode
   defaultTheme?: Theme
   storageKey?: string
-  attribute?: string // Adicionado
-  enableSystem?: boolean // Adicionado
-  disableTransitionOnChange?: boolean // Adicionado
+  attribute?: string
+  enableSystem?: boolean
+  disableTransitionOnChange?: boolean
 }
 
 type ThemeProviderState = {
@@ -27,18 +26,32 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
+// Helper function to check if code is running in browser
+const isBrowser = () => typeof window !== "undefined"
+
 export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "theme",
-  attribute = "class", // Valor padrão
-  enableSystem = true, // Valor padrão
-  disableTransitionOnChange = false, // Valor padrão
+  attribute = "class",
+  enableSystem = true,
+  disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(storageKey) as Theme) || defaultTheme)
+  // Initialize with defaultTheme and then update in useEffect
+  const [theme, setTheme] = useState<Theme>(defaultTheme)
+
+  // Initialize theme from localStorage only on client-side
+  useEffect(() => {
+    if (isBrowser()) {
+      const savedTheme = localStorage.getItem(storageKey) as Theme
+      setTheme(savedTheme || defaultTheme)
+    }
+  }, [defaultTheme, storageKey])
 
   useEffect(() => {
+    if (!isBrowser()) return
+
     const root = window.document.documentElement
 
     // Remover classes anteriores
@@ -66,7 +79,9 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
+      if (isBrowser()) {
+        localStorage.setItem(storageKey, theme)
+      }
       setTheme(theme)
     },
   }
@@ -85,4 +100,3 @@ export const useTheme = () => {
 
   return context
 }
-

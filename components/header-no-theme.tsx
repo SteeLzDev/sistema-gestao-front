@@ -23,28 +23,52 @@ export function Header() {
               Dashboard
             </Link>
             <Link
+              href="/estoque"
+              className={`transition-colors hover:text-foreground/80 ${
+                pathname === "/estoque" ? "text-foreground" : "text-foreground/60"
+              }`}
+            >
+              Estoque
+            </Link>
+            <Link
+              href="/vendas"
+              className={`transition-colors hover:text-foreground/80 ${
+                pathname === "/vendas" ? "text-foreground" : "text-foreground/60"
+              }`}
+            >
+              Vendas
+            </Link>
+            <Link
               href="/fila"
               className={`transition-colors hover:text-foreground/80 ${
                 pathname === "/fila" ? "text-foreground" : "text-foreground/60"
               }`}
             >
-              Fila
+              Fila de Clientes
             </Link>
             <Link
-              href="/clientes"
+              href="/relatorios"
               className={`transition-colors hover:text-foreground/80 ${
-                pathname === "/clientes" ? "text-foreground" : "text-foreground/60"
+                pathname === "/relatorios" ? "text-foreground" : "text-foreground/60"
               }`}
             >
-              Clientes
+              Relatórios
             </Link>
             <Link
-              href="/servicos"
+              href="/usuarios"
               className={`transition-colors hover:text-foreground/80 ${
-                pathname === "/servicos" ? "text-foreground" : "text-foreground/60"
+                pathname === "/usuarios" ? "text-foreground" : "text-foreground/60"
               }`}
             >
-              Serviços
+              Usuários
+            </Link>
+            <Link
+              href="/configuracoes"
+              className={`transition-colors hover:text-foreground/80 ${
+                pathname === "/configuracoes" ? "text-foreground" : "text-foreground/60"
+              }`}
+            >
+              Configurações
             </Link>
           </nav>
         </div>
@@ -55,4 +79,3 @@ export function Header() {
     </header>
   )
 }
-

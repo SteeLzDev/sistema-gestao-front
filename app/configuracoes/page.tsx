@@ -10,9 +10,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/components/ui/use-toast"
-import { Database, Globe, Bell, Shield, Moon, Sun } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Database, Globe, Bell, Shield, Moon, Sun, ArrowLeft } from 'lucide-react'
 
 export default function ConfiguracoesPage() {
+  const router = useRouter()
   const { toast } = useToast()
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -43,7 +45,18 @@ export default function ConfiguracoesPage() {
   return (
     <div className="container py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Configurações do Sistema</h1>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => router.push("/dashboard")} 
+            className="flex items-center gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Voltar para Dashboard</span>
+          </Button>
+          <h1 className="text-3xl font-bold">Configurações do Sistema</h1>
+        </div>
       </div>
 
       <Tabs defaultValue="geral" className="space-y-4">
@@ -250,4 +263,3 @@ export default function ConfiguracoesPage() {
     </div>
   )
 }
-

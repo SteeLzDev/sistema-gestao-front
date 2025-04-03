@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Edit, Trash, Shield, User, AlertCircle, RefreshCw } from "lucide-react"
+import { Plus, Edit, Trash, Shield, User, AlertCircle, RefreshCw, ArrowLeft } from 'lucide-react'
 import usuarioService from "@/services/usuarioService"
 import { useToast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
 import { UsuarioForm } from "@/components/usuario/UsuarioForm"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
@@ -33,6 +34,7 @@ interface Usuario {
 }
 
 export default function UsuariosPage() {
+  const router = useRouter()
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -181,7 +183,18 @@ export default function UsuariosPage() {
   return (
     <div className="container py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Gerenciamento de Usuários</h1>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => router.push("/dashboard")} 
+            className="flex items-center gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Voltar para Dashboard</span>
+          </Button>
+          <h1 className="text-3xl font-bold">Gerenciamento de Usuários</h1>
+        </div>
         <Button onClick={handleAddClick}>
           <Plus className="mr-2 h-4 w-4" />
           Adicionar Usuário
@@ -315,4 +328,3 @@ export default function UsuariosPage() {
     </div>
   )
 }
-

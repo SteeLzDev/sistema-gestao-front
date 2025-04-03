@@ -1,62 +1,39 @@
+// components/auth/ProtectedRoute.tsx
 "use client"
 
-import type React from "react"
-
-import { useEffect, useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface ProtectedRouteProps {
   children: React.ReactNode
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { isAuthenticated, loading } = useAuth()
   const router = useRouter()
-  const pathname = usePathname()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar se o usuário está autenticado
-    // Em um cenário real, você verificaria o token JWT ou sessão
-    const checkAuth = () => {
-      // Rotas públicas que não precisam de autenticação
-      const publicRoutes = ["/login", "/register", "/forgot-password"]
-
-      // Simulando autenticação - em produção, verifique o token JWT
-      const token = localStorage.getItem("token")
-
-      if (!token && !publicRoutes.includes(pathname)) {
-        // Redirecionar para login se não estiver autenticado
-        router.push("/login")
-      } else {
-        setIsAuthenticated(true)
-      }
-
-      setIsLoading(false)
+    // Se não estiver carregando e não estiver autenticado, redirecionar para login
+    if (!loading && !isAuthenticated) {
+      router.push("/login")
     }
+  }, [isAuthenticated, loading, router])
 
-    checkAuth()
-  }, [pathname, router])
-
-  // Simulando um usuário autenticado para desenvolvimento
-  useEffect(() => {
-    // Apenas para desenvolvimento - remova em produção
-    if (process.env.NODE_ENV === "development") {
-      localStorage.setItem("token", "fake-token-for-development")
-      setIsAuthenticated(true)
-      setIsLoading(false)
-    }
-  }, [])
-
-  if (isLoading) {
+  // Enquanto estiver carregando, mostrar um indicador de carregamento
+  if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
       </div>
     )
   }
 
-  // Se estiver autenticado ou em uma rota pública, renderize os filhos
+  // Se não estiver autenticado, não renderizar nada (o redirecionamento acontecerá no useEffect)
+  if (!isAuthenticated) {
+    return null
+  }
+
+  // Se estiver autenticado, renderizar os filhos
   return <>{children}</>
 }
-

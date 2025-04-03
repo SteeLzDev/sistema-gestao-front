@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Edit, Trash, AlertCircle, Search, Filter } from "lucide-react"
+import { Plus, Edit, Trash, AlertCircle, Search, Filter, ArrowLeft } from 'lucide-react'
+import { useRouter } from "next/navigation"
 import produtoService from "@/services/produtoService"
 import { useToast } from "@/components/ui/use-toast"
 import { ProdutoForm } from "@/components/produto/ProdutoForm"
@@ -41,6 +42,7 @@ interface Produto {
 }
 
 export default function EstoquePage() {
+  const router = useRouter()
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [filteredProdutos, setFilteredProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
@@ -127,7 +129,7 @@ export default function EstoquePage() {
     if (!selectedProduto) return
 
     try {
-      await produtoService.removerProduto(selectedProduto.id)
+      await produtoService.excluirProduto(selectedProduto.id)
       toast({
         title: "Sucesso",
         description: "Produto removido com sucesso.",
@@ -172,7 +174,18 @@ export default function EstoquePage() {
   return (
     <div className="container py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Controle de Estoque</h1>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => router.push("/dashboard")} 
+            className="flex items-center gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Voltar para Dashboard</span>
+          </Button>
+          <h1 className="text-3xl font-bold">Controle de Estoque</h1>
+        </div>
         <Button onClick={handleAddClick}>
           <Plus className="mr-2 h-4 w-4" />
           Adicionar Produto
@@ -384,4 +397,3 @@ export default function EstoquePage() {
     </div>
   )
 }
-

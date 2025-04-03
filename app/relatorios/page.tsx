@@ -9,14 +9,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { CalendarIcon, Download, FileText } from "lucide-react"
+import { CalendarIcon, Download, FileText, ArrowLeft } from 'lucide-react'
 import { dashboardService, type SalesData, type RecentSale } from "@/services/dashboardService"
 import { useToast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
 import { Overview } from "@/components/dashboard/overview"
 import type { DateRange } from "react-day-picker"
 import { jsPDF } from "jspdf"
 
 export default function RelatoriosPage() {
+  const router = useRouter()
   const [salesData, setSalesData] = useState<SalesData[]>([])
   const [recentSales, setRecentSales] = useState<RecentSale[]>([])
   const [loading, setLoading] = useState(true)
@@ -212,7 +214,18 @@ export default function RelatoriosPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h2>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => router.push("/dashboard")} 
+            className="flex items-center gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Voltar para Dashboard</span>
+          </Button>
+          <h2 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h2>
+        </div>
         <div className="flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
@@ -354,4 +367,3 @@ export default function RelatoriosPage() {
     </div>
   )
 }
-

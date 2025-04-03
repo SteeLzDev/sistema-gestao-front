@@ -20,3 +20,13 @@ export interface Atendimento {
   status: string
 }
 
+// Adicionando a estrutura do DTO do backend para comparação
+export interface AtendimentoDTO {
+  id: number
+  nome: string
+  servico: string
+  inicio: string
+  atendente: string
+  status: string
+}
+

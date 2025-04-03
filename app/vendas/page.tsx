@@ -8,8 +8,11 @@ import { vendaService } from "@/services/vendaService"
 import { Header } from "@/components/header-no-theme"
 import Link from "next/link"
 import { formatarData, formatarMoeda } from "@/lib/utils"
+import { useRouter } from "next/navigation"
+import { ArrowLeft } from 'lucide-react'
 
 export default function VendasPage() {
+  const router = useRouter()
   const [vendas, setVendas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +41,18 @@ export default function VendasPage() {
       <main className="flex-1">
         <div className="container mx-auto p-4 space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Gerenciamento de Vendas</h1>
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => router.push("/dashboard")} 
+                className="flex items-center gap-1"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Voltar para Dashboard</span>
+              </Button>
+              <h1 className="text-2xl font-bold">Gerenciamento de Vendas</h1>
+            </div>
             <div className="space-x-2">
               <Button asChild>
                 <Link href="/vendas/simples">Nova Venda (Simplificada)</Link>
@@ -95,4 +109,3 @@ export default function VendasPage() {
     </div>
   )
 }
-

@@ -24,6 +24,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => void
+  checkAuth: () => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -34,67 +35,73 @@ const isBrowser = () => typeof window !== "undefined"
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
   const { toast } = useToast()
+  const router = useRouter()
 
   // Check if user is authenticated on page load
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        if (isBrowser()) {
-          const storedUser = localStorage.getItem("user")
-          const token = localStorage.getItem("auth_token")
-          
-          if (token && storedUser) {
-            setUser(JSON.parse(storedUser))
-          }
-        }
-      } catch (error) {
-        console.error("Error checking authentication:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
+    if (isBrowser()) {
+      const storedUser = sessionStorage.getItem("user")
+      const token = sessionStorage.getItem("auth_token")
 
-    checkAuth()
+      if (token && storedUser) {
+        try {
+          setUser(JSON.parse(storedUser))
+        } catch (e) {
+          console.error("Erro ao parsear usuário armazenado:", e)
+          sessionStorage.removeItem("user")
+          sessionStorage.removeItem("auth_token")
+        }
+      }
+
+      setLoading(false)
+    }
   }, [])
+
+  // Function to check authentication status
+  const checkAuth = async (): Promise<boolean> => {
+    if (!isBrowser()) return false
+
+    const token = sessionStorage.getItem("auth_token")
+    return !!token
+  }
 
   // Login function
   const login = async (credentials: LoginCredentials) => {
     try {
       setLoading(true)
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(credentials),
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(errorText || 'Falha na autenticação')
+        throw new Error(errorText || "Falha na autenticação")
       }
 
       const data = await response.json()
-      
+
       // Extract token and user data
       const { token, ...userData } = data
-      
+
       // Create user object
       const loggedUser: User = {
         id: userData.id || userData.usuario?.id,
         username: userData.username || userData.usuario?.username,
         nome: userData.nome || userData.usuario?.nome,
-        perfil: userData.perfil || userData.usuario?.perfil || 'USER',
-        token
+        perfil: userData.perfil || userData.usuario?.perfil || "USER",
+        token,
       }
 
-      // Store in localStorage
+      // Store in sessionStorage (will be cleared when browser is closed)
       if (isBrowser()) {
-        localStorage.setItem("auth_token", token)
-        localStorage.setItem("user", JSON.stringify(loggedUser))
+        sessionStorage.setItem("auth_token", token)
+        sessionStorage.setItem("user", JSON.stringify(loggedUser))
       }
 
       setUser(loggedUser)
@@ -103,18 +110,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login realizado com sucesso",
         description: `Bem-vindo, ${loggedUser.nome || loggedUser.username}!`,
       })
-
-      // Redirect to dashboard
-      router.push("/dashboard")
     } catch (error: any) {
-      console.error("Login error:", error)
-      
+      console.error("Erro no login:", error)
+
       toast({
         title: "Erro no login",
         description: error.message || "Credenciais inválidas. Tente novamente.",
         variant: "destructive",
       })
-      
+
       throw error
     } finally {
       setLoading(false)
@@ -124,17 +128,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout function
   const logout = () => {
     if (isBrowser()) {
-      localStorage.removeItem("auth_token")
-      localStorage.removeItem("user")
+      sessionStorage.removeItem("auth_token")
+      sessionStorage.removeItem("user")
     }
-    
+
     setUser(null)
-    
+
     toast({
       title: "Logout realizado",
       description: "Você foi desconectado com sucesso.",
     })
-    
+
+    // Redirecionar para a página de login
     router.push("/login")
   }
 
@@ -144,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user,
     login,
     logout,
+    checkAuth,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -157,3 +163,4 @@ export function useAuth() {
   }
   return context
 }
+

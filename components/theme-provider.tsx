@@ -38,19 +38,29 @@ export function ThemeProvider({
   disableTransitionOnChange = false,
   ...props
 }: ThemeProviderProps) {
+  // Adicionar estado de montagem para evitar problemas de hidratação
+  const [mounted, setMounted] = useState(false)
+
   // Initialize with defaultTheme and then update in useEffect
   const [theme, setTheme] = useState<Theme>(defaultTheme)
+
+  // Marcar componente como montado após a renderização inicial
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Initialize theme from localStorage only on client-side
   useEffect(() => {
     if (isBrowser()) {
       const savedTheme = localStorage.getItem(storageKey) as Theme
-      setTheme(savedTheme || defaultTheme)
+      if (savedTheme) {
+        setTheme(savedTheme)
+      }
     }
   }, [defaultTheme, storageKey])
 
   useEffect(() => {
-    if (!isBrowser()) return
+    if (!isBrowser() || !mounted) return
 
     const root = window.document.documentElement
 
@@ -74,7 +84,7 @@ export function ThemeProvider({
         root.classList.remove("no-transitions")
       }, 0)
     }
-  }, [theme, enableSystem, disableTransitionOnChange])
+  }, [theme, enableSystem, disableTransitionOnChange, mounted])
 
   const value = {
     theme,
@@ -84,6 +94,12 @@ export function ThemeProvider({
       }
       setTheme(theme)
     },
+  }
+
+  // Renderizar children sem modificações durante SSR ou antes da montagem
+  // para evitar problemas de hidratação
+  if (!mounted) {
+    return <>{children}</>
   }
 
   return (
@@ -100,3 +116,4 @@ export const useTheme = () => {
 
   return context
 }
+

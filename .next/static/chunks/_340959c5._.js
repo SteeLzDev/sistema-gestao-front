@@ -24,14 +24,24 @@ const ThemeProviderContext = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5
 const isBrowser = ()=>"object" !== "undefined";
 function ThemeProvider({ children, defaultTheme = "system", storageKey = "theme", attribute = "class", enableSystem = true, disableTransitionOnChange = false, ...props }) {
     _s();
+    // Adicionar estado de montagem para evitar problemas de hidratação
+    const [mounted, setMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     // Initialize with defaultTheme and then update in useEffect
     const [theme, setTheme] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(defaultTheme);
+    // Marcar componente como montado após a renderização inicial
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "ThemeProvider.useEffect": ()=>{
+            setMounted(true);
+        }
+    }["ThemeProvider.useEffect"], []);
     // Initialize theme from localStorage only on client-side
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ThemeProvider.useEffect": ()=>{
             if (isBrowser()) {
                 const savedTheme = localStorage.getItem(storageKey);
-                setTheme(savedTheme || defaultTheme);
+                if (savedTheme) {
+                    setTheme(savedTheme);
+                }
             }
         }
     }["ThemeProvider.useEffect"], [
@@ -40,9 +50,7 @@ function ThemeProvider({ children, defaultTheme = "system", storageKey = "theme"
     ]);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "ThemeProvider.useEffect": ()=>{
-            if (!isBrowser()) {
-                "TURBOPACK unreachable";
-            }
+            if (!isBrowser() || !mounted) return;
             const root = window.document.documentElement;
             // Remover classes anteriores
             root.classList.remove("light", "dark");
@@ -67,7 +75,8 @@ function ThemeProvider({ children, defaultTheme = "system", storageKey = "theme"
     }["ThemeProvider.useEffect"], [
         theme,
         enableSystem,
-        disableTransitionOnChange
+        disableTransitionOnChange,
+        mounted
     ]);
     const value = {
         theme,
@@ -78,17 +87,24 @@ function ThemeProvider({ children, defaultTheme = "system", storageKey = "theme"
             setTheme(theme);
         }
     };
+    // Renderizar children sem modificações durante SSR ou antes da montagem
+    // para evitar problemas de hidratação
+    if (!mounted) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+            children: children
+        }, void 0, false);
+    }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ThemeProviderContext.Provider, {
         ...props,
         value: value,
         children: children
     }, void 0, false, {
         fileName: "[project]/components/theme-provider.tsx",
-        lineNumber: 90,
+        lineNumber: 106,
         columnNumber: 5
     }, this);
 }
-_s(ThemeProvider, "W8D4/Q1J7zkRqv7jhld4gmhU6go=");
+_s(ThemeProvider, "7Pq/FiQ2FwZGhQgtZHV4fjqiFGo=");
 _c = ThemeProvider;
 const useTheme = ()=>{
     _s1();
@@ -683,45 +699,49 @@ function AuthProvider({ children }) {
     _s();
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
-    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$use$2d$toast$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"])();
+    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     // Check if user is authenticated on page load
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AuthProvider.useEffect": ()=>{
-            const checkAuth = {
-                "AuthProvider.useEffect.checkAuth": async ()=>{
+            if (isBrowser()) {
+                const storedUser = sessionStorage.getItem("user");
+                const token = sessionStorage.getItem("auth_token");
+                if (token && storedUser) {
                     try {
-                        if (isBrowser()) {
-                            const storedUser = localStorage.getItem("user");
-                            const token = localStorage.getItem("auth_token");
-                            if (token && storedUser) {
-                                setUser(JSON.parse(storedUser));
-                            }
-                        }
-                    } catch (error) {
-                        console.error("Error checking authentication:", error);
-                    } finally{
-                        setLoading(false);
+                        setUser(JSON.parse(storedUser));
+                    } catch (e) {
+                        console.error("Erro ao parsear usuário armazenado:", e);
+                        sessionStorage.removeItem("user");
+                        sessionStorage.removeItem("auth_token");
                     }
                 }
-            }["AuthProvider.useEffect.checkAuth"];
-            checkAuth();
+                setLoading(false);
+            }
         }
     }["AuthProvider.useEffect"], []);
+    // Function to check authentication status
+    const checkAuth = async ()=>{
+        if (!isBrowser()) {
+            "TURBOPACK unreachable";
+        }
+        const token = sessionStorage.getItem("auth_token");
+        return !!token;
+    };
     // Login function
     const login = async (credentials)=>{
         try {
             setLoading(true);
             const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:8080/sistema-gestao/api")}/auth/login`, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(credentials)
             });
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(errorText || 'Falha na autenticação');
+                throw new Error(errorText || "Falha na autenticação");
             }
             const data = await response.json();
             // Extract token and user data
@@ -731,23 +751,21 @@ function AuthProvider({ children }) {
                 id: userData.id || userData.usuario?.id,
                 username: userData.username || userData.usuario?.username,
                 nome: userData.nome || userData.usuario?.nome,
-                perfil: userData.perfil || userData.usuario?.perfil || 'USER',
+                perfil: userData.perfil || userData.usuario?.perfil || "USER",
                 token
             };
-            // Store in localStorage
+            // Store in sessionStorage (will be cleared when browser is closed)
             if (isBrowser()) {
-                localStorage.setItem("auth_token", token);
-                localStorage.setItem("user", JSON.stringify(loggedUser));
+                sessionStorage.setItem("auth_token", token);
+                sessionStorage.setItem("user", JSON.stringify(loggedUser));
             }
             setUser(loggedUser);
             toast({
                 title: "Login realizado com sucesso",
                 description: `Bem-vindo, ${loggedUser.nome || loggedUser.username}!`
             });
-            // Redirect to dashboard
-            router.push("/dashboard");
         } catch (error) {
-            console.error("Login error:", error);
+            console.error("Erro no login:", error);
             toast({
                 title: "Erro no login",
                 description: error.message || "Credenciais inválidas. Tente novamente.",
@@ -761,14 +779,15 @@ function AuthProvider({ children }) {
     // Logout function
     const logout = ()=>{
         if (isBrowser()) {
-            localStorage.removeItem("auth_token");
-            localStorage.removeItem("user");
+            sessionStorage.removeItem("auth_token");
+            sessionStorage.removeItem("user");
         }
         setUser(null);
         toast({
             title: "Logout realizado",
             description: "Você foi desconectado com sucesso."
         });
+        // Redirecionar para a página de login
         router.push("/login");
     };
     const value = {
@@ -776,21 +795,22 @@ function AuthProvider({ children }) {
         loading,
         isAuthenticated: !!user,
         login,
-        logout
+        logout,
+        checkAuth
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(AuthContext.Provider, {
         value: value,
         children: children
     }, void 0, false, {
         fileName: "[project]/contexts/AuthContext.tsx",
-        lineNumber: 149,
+        lineNumber: 155,
         columnNumber: 10
     }, this);
 }
-_s(AuthProvider, "g1BMRRM2FrHni62MKjzx5yCGHjw=", false, function() {
+_s(AuthProvider, "a/Gi5ymi3/KcYTuqJkTqv3W9xno=", false, function() {
     return [
-        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"],
-        __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$use$2d$toast$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$use$2d$toast$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];
 });
 _c = AuthProvider;

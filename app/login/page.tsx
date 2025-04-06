@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
@@ -7,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function LoginPage() {
@@ -15,16 +17,15 @@ export default function LoginPage() {
   const [senha, setSenha] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [shouldRedirect, setShouldRedirect] = useState(false)
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, loading } = useAuth()
   const router = useRouter()
 
-  // Efeito para redirecionar se já estiver autenticado
+  // Redirecionar se já estiver autenticado
   useEffect(() => {
-    if (isAuthenticated || shouldRedirect) {
+    if (isAuthenticated && !loading) {
       router.push("/dashboard")
     }
-  }, [isAuthenticated, shouldRedirect, router])
+  }, [isAuthenticated, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,17 +39,26 @@ export default function LoginPage() {
       setError(null)
       setIsLoading(true)
       await login({ username, senha })
-      setShouldRedirect(true)
+      router.push("/dashboard")
     } catch (error: any) {
-      console.error("Login error:", error)
+      console.error("Erro no login:", error)
       setError(error.message || "Credenciais inválidas. Tente novamente.")
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Mostrar um loader enquanto verifica a autenticação
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
   // Se já estiver autenticado, não renderize o conteúdo enquanto o redirecionamento acontece
-  if (isAuthenticated || shouldRedirect) {
+  if (isAuthenticated) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -117,3 +127,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

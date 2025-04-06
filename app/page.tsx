@@ -1,215 +1,103 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DollarSign, Users, Package, ClipboardList, ArrowUpRight, ArrowDownRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Overview } from "@/components/dashboard/overview"
-import { RecentSales } from "@/components/dashboard/recent-sales"
-import { InventoryStatus } from "@/components/dashboard/inventory-status"
-import { ServiceQueue } from "@/components/dashboard/service-queue"
-import { useToast } from "@/components/ui/use-toast"
-import { dashboardService, type DashboardData } from "@/services/dashboardService"
+import type React from "react"
 
-// Dados mockados como fallback
-const mockData = {
-  totalSales: 12890.75,
-  salesGrowth: 14.5,
-  totalCustomers: 342,
-  customersGrowth: 7.2,
-  totalProducts: 189,
-  lowStockProducts: 12,
-  queueWaiting: 8,
-  queueInService: 3,
-}
+import { useState, useEffect } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
+import { Sidebar } from "@/components/layout/sidebar"
+import { Header } from "@/components/layout/header"
+import { Loader2 } from "lucide-react"
 
-export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData>(mockData)
-  const [loading, setLoading] = useState(true)
-  const { toast } = useToast()
+// Função para verificar se estamos no navegador
+const isBrowser = () => typeof window !== "undefined"
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true)
-      const dashboardData = await dashboardService.getDashboardData()
-      setData(dashboardData)
-    } catch (error) {
-      console.error("Erro ao carregar dados do dashboard:", error)
-      toast({
-        title: "Erro ao carregar dados",
-        description: "Não foi possível carregar os dados do dashboard. Usando dados de exemplo.",
-        variant: "destructive",
-      })
-      // Fallback para dados mockados em caso de erro
-      setData(mockData)
-    } finally {
-      setLoading(false)
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const { isAuthenticated, loading } = useAuth()
+  const pathname = usePathname()
+  const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Inicializar o estado do sidebar a partir do localStorage, se disponível
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (isBrowser()) {
+      const savedState = localStorage.getItem("sidebarOpen")
+      return savedState !== null ? savedState === "true" : true
     }
+    return true
+  })
+
+  // Persistir o estado do sidebar no localStorage quando ele mudar
+  useEffect(() => {
+    if (isBrowser() && isMounted) {
+      localStorage.setItem("sidebarOpen", String(isSidebarOpen))
+    }
+  }, [isSidebarOpen, isMounted])
+
+  // Mostrar o botão de voltar em todas as páginas, exceto na dashboard principal
+  const showBackButton = pathname !== "/dashboard"
+
+  // Obter título da página com base no pathname
+  const getPageTitle = () => {
+    const path = pathname.split("/")[2] || pathname.split("/")[1]
+    if (path === "dashboard") return "Dashboard"
+    if (path === "vendas") return "Vendas"
+    if (path === "estoque") return "Estoque"
+    if (path === "fila") return "Fila de Clientes"
+    if (path === "relatorios") return "Relatórios"
+    if (path === "usuarios") return "Usuários"
+    if (path === "configuracoes") return "Configurações"
+    return ""
+  }
+
+  // Função para alternar o estado do sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev)
   }
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [toast])
+    setIsMounted(true)
 
-  const handleRefresh = () => {
-    fetchDashboardData()
+    // Redirecionar para login se não estiver autenticado
+    if (!loading && !isAuthenticated) {
+      router.push("/login")
+    }
+  }, [loading, isAuthenticated, router])
+
+  // Não renderizar nada durante SSR
+  if (!isMounted) {
+    return null
+  }
+
+  // Mostrar tela de carregamento enquanto verifica autenticação
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  // Se não estiver autenticado, não renderizar nada (o redirecionamento acontecerá no useEffect)
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <div className="flex items-center gap-2">
-          <Button variant="outline">Download Relatório</Button>
-          <Button onClick={handleRefresh}>{loading ? "Atualizando..." : "Atualizar Dados"}</Button>
-        </div>
+    <div className="flex min-h-screen w-full" data-testid="dashboard-layout">
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <div className="flex flex-1 flex-col w-full md:ml-64">
+        <Header showBackButton={showBackButton} title={getPageTitle()} data-app-header="true" />
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</main>
       </div>
-
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="sales">Vendas</TabsTrigger>
-          <TabsTrigger value="inventory">Estoque</TabsTrigger>
-          <TabsTrigger value="queue">Fila</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Vendas Totais</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {loading ? "..." : `R$ ${data.totalSales.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {data.salesGrowth > 0 ? (
-                    <span className="flex items-center text-green-600">
-                      <ArrowUpRight className="mr-1 h-4 w-4" />+{data.salesGrowth}% em relação ao mês anterior
-                    </span>
-                  ) : (
-                    <span className="flex items-center text-red-600">
-                      <ArrowDownRight className="mr-1 h-4 w-4" />
-                      {data.salesGrowth}% em relação ao mês anterior
-                    </span>
-                  )}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Clientes</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{loading ? "..." : data.totalCustomers}</div>
-                <p className="text-xs text-muted-foreground">
-                  {data.customersGrowth > 0 ? (
-                    <span className="flex items-center text-green-600">
-                      <ArrowUpRight className="mr-1 h-4 w-4" />+{data.customersGrowth}% em relação ao mês anterior
-                    </span>
-                  ) : (
-                    <span className="flex items-center text-red-600">
-                      <ArrowDownRight className="mr-1 h-4 w-4" />
-                      {data.customersGrowth}% em relação ao mês anterior
-                    </span>
-                  )}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Produtos</CardTitle>
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{loading ? "..." : data.totalProducts}</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className={data.lowStockProducts > 10 ? "text-amber-600" : "text-muted-foreground"}>
-                    {data.lowStockProducts} produtos com estoque baixo
-                  </span>
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Fila de Atendimento</CardTitle>
-                <ClipboardList className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{loading ? "..." : data.queueWaiting + data.queueInService}</div>
-                <p className="text-xs text-muted-foreground">
-                  {data.queueWaiting} aguardando, {data.queueInService} em atendimento
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
-              <CardHeader>
-                <CardTitle>Visão Geral</CardTitle>
-                <CardDescription>Vendas mensais do ano atual</CardDescription>
-              </CardHeader>
-              <CardContent className="pl-2">
-                <Overview />
-              </CardContent>
-            </Card>
-
-            <Card className="col-span-3">
-              <CardHeader>
-                <CardTitle>Vendas Recentes</CardTitle>
-                <CardDescription>Últimas 5 vendas realizadas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RecentSales />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="sales" className="space-y-4">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Vendas Detalhadas</CardTitle>
-              <CardDescription>Análise detalhada de vendas por período</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <Overview />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="inventory" className="space-y-4">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Status do Estoque</CardTitle>
-              <CardDescription>Produtos com estoque baixo e mais vendidos</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <InventoryStatus />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="queue" className="space-y-4">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Fila de Atendimento</CardTitle>
-              <CardDescription>Clientes aguardando e em atendimento</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ServiceQueue />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   )
 }

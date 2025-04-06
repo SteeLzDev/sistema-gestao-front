@@ -1,33 +1,24 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { User, LogOut, ArrowLeft } from 'lucide-react'
+import { ChevronLeft, User, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface HeaderProps {
+export interface HeaderProps {
+  showBackButton?: boolean
   title?: string
   className?: string
+  [key: string]: any // Para permitir data-attributes e outras props
 }
 
-export function Header({ title, className }: HeaderProps) {
+export function Header({ showBackButton = false, title, className, ...props }: HeaderProps) {
   const { user, logout } = useAuth()
   const router = useRouter()
-  const pathname = usePathname()
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const [showBackButton, setShowBackButton] = useState(false)
-
-  // Determinar se devemos mostrar o botão de voltar
-  useEffect(() => {
-    // Mostrar o botão em todas as páginas exceto no dashboard principal
-    const shouldShowBackButton = pathname !== "/dashboard"
-    console.log("Current pathname:", pathname)
-    console.log("Should show back button:", shouldShowBackButton)
-    setShowBackButton(shouldShowBackButton)
-  }, [pathname])
 
   const handleLogout = () => {
     logout()
@@ -43,17 +34,13 @@ export function Header({ title, className }: HeaderProps) {
   }
 
   return (
-    <header className={cn("flex h-16 items-center border-b px-4", className)} data-app-header="true">
-      {/* Botão de voltar sempre visível para depuração */}
-      <Button 
-        variant="outline" 
-        size="sm" 
-        onClick={goBack} 
-        className="mr-4 flex items-center gap-1"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span>Voltar</span>
-      </Button>
+    <header className={cn("flex h-16 items-center border-b px-4", className)} {...props}>
+      {showBackButton && (
+        <Button variant="ghost" size="icon" onClick={goBack} className="mr-2">
+          <ChevronLeft className="h-4 w-4" />
+          <span className="sr-only">Voltar</span>
+        </Button>
+      )}
 
       {title && <h1 className="text-base font-semibold">{title}</h1>}
 
@@ -95,3 +82,4 @@ export function Header({ title, className }: HeaderProps) {
     </header>
   )
 }
+

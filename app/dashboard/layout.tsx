@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Header } from "@/components/layout/header"
-import { Loader2 } from 'lucide-react'
+import { Loader2 } from "lucide-react"
 
 // Função para verificar se estamos no navegador
 const isBrowser = () => typeof window !== "undefined"
@@ -21,20 +21,20 @@ export default function DashboardLayout({
   const pathname = usePathname()
   const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
-  
+
   // Inicializar o estado do sidebar a partir do localStorage, se disponível
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
     if (isBrowser()) {
-      const savedState = localStorage.getItem("sidebarOpen")
+      const savedState = sessionStorage.getItem("sidebarOpen")
       return savedState !== null ? savedState === "true" : true
     }
     return true
   })
 
-  // Persistir o estado do sidebar no localStorage quando ele mudar
+  // Persistir o estado do sidebar no sessionStorage quando ele mudar
   useEffect(() => {
     if (isBrowser() && isMounted) {
-      localStorage.setItem("sidebarOpen", String(isSidebarOpen))
+      sessionStorage.setItem("sidebarOpen", String(isSidebarOpen))
     }
   }, [isSidebarOpen, isMounted])
 
@@ -56,17 +56,17 @@ export default function DashboardLayout({
 
   // Função para alternar o estado do sidebar
   const toggleSidebar = () => {
-    setIsSidebarOpen(prev => !prev)
+    setIsSidebarOpen((prev) => !prev)
   }
 
   useEffect(() => {
     setIsMounted(true)
 
-    // Se não estiver autenticado, redirecionar para login
-    if (isMounted && !loading && !isAuthenticated) {
+    // Redirecionar para login se não estiver autenticado
+    if (!loading && !isAuthenticated) {
       router.push("/login")
     }
-  }, [isMounted, loading, isAuthenticated, router])
+  }, [loading, isAuthenticated, router])
 
   // Não renderizar nada durante SSR
   if (!isMounted) {
@@ -84,16 +84,21 @@ export default function DashboardLayout({
 
   // Se não estiver autenticado, não renderizar nada (o redirecionamento acontecerá no useEffect)
   if (!isAuthenticated) {
-    return null
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
     <div className="flex min-h-screen w-full" data-testid="dashboard-layout">
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex flex-1 flex-col w-full md:ml-64">
-      <Header title={getPageTitle()} data-app-header="true" />
+        <Header showBackButton={showBackButton} title={getPageTitle()} data-app-header="true" />
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</main>
       </div>
     </div>
   )
 }
+

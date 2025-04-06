@@ -331,7 +331,7 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-function Header({ title, className }) {
+function Header({ showBackbutton = false, title, className, ...props }) {
     _s();
     const { user, logout } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
@@ -375,20 +375,20 @@ function Header({ title, className }) {
                         className: "h-4 w-4"
                     }, void 0, false, {
                         fileName: "[project]/components/layout/header.tsx",
-                        lineNumber: 54,
+                        lineNumber: 56,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                         children: "Voltar"
                     }, void 0, false, {
                         fileName: "[project]/components/layout/header.tsx",
-                        lineNumber: 55,
+                        lineNumber: 57,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/layout/header.tsx",
-                lineNumber: 48,
+                lineNumber: 50,
                 columnNumber: 7
             }, this),
             title && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -396,7 +396,7 @@ function Header({ title, className }) {
                 children: title
             }, void 0, false, {
                 fileName: "[project]/components/layout/header.tsx",
-                lineNumber: 58,
+                lineNumber: 60,
                 columnNumber: 17
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -418,20 +418,20 @@ function Header({ title, className }) {
                                             alt: user?.nome || "Avatar"
                                         }, void 0, false, {
                                             fileName: "[project]/components/layout/header.tsx",
-                                            lineNumber: 64,
+                                            lineNumber: 66,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AvatarFallback"], {
                                             children: user?.nome?.charAt(0) || user?.username?.charAt(0) || "U"
                                         }, void 0, false, {
                                             fileName: "[project]/components/layout/header.tsx",
-                                            lineNumber: 65,
+                                            lineNumber: 67,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/layout/header.tsx",
-                                    lineNumber: 63,
+                                    lineNumber: 65,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -439,13 +439,13 @@ function Header({ title, className }) {
                                     children: "Minha Conta"
                                 }, void 0, false, {
                                     fileName: "[project]/components/layout/header.tsx",
-                                    lineNumber: 67,
+                                    lineNumber: 69,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/layout/header.tsx",
-                            lineNumber: 62,
+                            lineNumber: 64,
                             columnNumber: 11
                         }, this),
                         showUserMenu && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -456,7 +456,7 @@ function Header({ title, className }) {
                                     children: "Minha Conta"
                                 }, void 0, false, {
                                     fileName: "[project]/components/layout/header.tsx",
-                                    lineNumber: 72,
+                                    lineNumber: 74,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -470,27 +470,27 @@ function Header({ title, className }) {
                                             className: "mr-2 h-3 w-3"
                                         }, void 0, false, {
                                             fileName: "[project]/components/layout/header.tsx",
-                                            lineNumber: 80,
+                                            lineNumber: 82,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             children: "Perfil"
                                         }, void 0, false, {
                                             fileName: "[project]/components/layout/header.tsx",
-                                            lineNumber: 81,
+                                            lineNumber: 83,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/layout/header.tsx",
-                                    lineNumber: 73,
+                                    lineNumber: 75,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "my-1 h-px bg-muted"
                                 }, void 0, false, {
                                     fileName: "[project]/components/layout/header.tsx",
-                                    lineNumber: 83,
+                                    lineNumber: 85,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -501,43 +501,43 @@ function Header({ title, className }) {
                                             className: "mr-2 h-3 w-3"
                                         }, void 0, false, {
                                             fileName: "[project]/components/layout/header.tsx",
-                                            lineNumber: 88,
+                                            lineNumber: 90,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             children: "Sair"
                                         }, void 0, false, {
                                             fileName: "[project]/components/layout/header.tsx",
-                                            lineNumber: 89,
+                                            lineNumber: 91,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/layout/header.tsx",
-                                    lineNumber: 84,
+                                    lineNumber: 86,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/layout/header.tsx",
-                            lineNumber: 71,
+                            lineNumber: 73,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/layout/header.tsx",
-                    lineNumber: 61,
+                    lineNumber: 63,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/components/layout/header.tsx",
-                lineNumber: 60,
+                lineNumber: 62,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/components/layout/header.tsx",
-        lineNumber: 46,
+        lineNumber: 48,
         columnNumber: 5
     }, this);
 }
@@ -583,7 +583,7 @@ var _s = __turbopack_context__.k.signature();
 const isBrowser = ()=>"object" !== "undefined";
 function DashboardLayout({ children }) {
     _s();
-    const { isAuthenticated, loading } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
+    const { isAuthenticated, loading, checkAuth } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
     const pathname = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const [isMounted, setIsMounted] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -629,13 +629,19 @@ function DashboardLayout({ children }) {
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "DashboardLayout.useEffect": ()=>{
             setIsMounted(true);
-            // Se não estiver autenticado, redirecionar para login
-            if (isMounted && !loading && !isAuthenticated) {
-                router.push("/login");
-            }
+            // Verificar autenticação quando o componente montar
+            const verifyAuth = {
+                "DashboardLayout.useEffect.verifyAuth": async ()=>{
+                    const isAuth = await checkAuth();
+                    if (!isAuth && !loading) {
+                        router.push("/login");
+                    }
+                }
+            }["DashboardLayout.useEffect.verifyAuth"];
+            verifyAuth();
         }
     }["DashboardLayout.useEffect"], [
-        isMounted,
+        checkAuth,
         loading,
         isAuthenticated,
         router
@@ -652,12 +658,12 @@ function DashboardLayout({ children }) {
                 className: "h-8 w-8 animate-spin text-primary"
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/layout.tsx",
-                lineNumber: 80,
+                lineNumber: 85,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/app/dashboard/layout.tsx",
-            lineNumber: 79,
+            lineNumber: 84,
             columnNumber: 7
         }, this);
     }
@@ -674,42 +680,43 @@ function DashboardLayout({ children }) {
                 toggleSidebar: toggleSidebar
             }, void 0, false, {
                 fileName: "[project]/app/dashboard/layout.tsx",
-                lineNumber: 92,
+                lineNumber: 97,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "flex flex-1 flex-col w-full md:ml-64",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$layout$2f$header$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Header"], {
+                        showBackButton: showBackButton,
                         title: getPageTitle(),
                         "data-app-header": "true"
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/layout.tsx",
-                        lineNumber: 94,
-                        columnNumber: 7
+                        lineNumber: 99,
+                        columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
                         className: "flex-1 p-4 md:p-6 overflow-y-auto",
                         children: children
                     }, void 0, false, {
                         fileName: "[project]/app/dashboard/layout.tsx",
-                        lineNumber: 95,
+                        lineNumber: 100,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/dashboard/layout.tsx",
-                lineNumber: 93,
+                lineNumber: 98,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/dashboard/layout.tsx",
-        lineNumber: 91,
+        lineNumber: 96,
         columnNumber: 5
     }, this);
 }
-_s(DashboardLayout, "YCISbdOpSnbGej0H7gpt0bk7NEY=", false, function() {
+_s(DashboardLayout, "JqDb9oh9E6ppWcSPxD73RIOAyrw=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"],

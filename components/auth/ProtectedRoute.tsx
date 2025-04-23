@@ -1,16 +1,23 @@
 // components/auth/ProtectedRoute.tsx
 "use client"
 
-import { useEffect } from "react"
+import { ReactNode, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
+import { Loader2 } from 'lucide-react'
 
 interface ProtectedRouteProps {
-  children: React.ReactNode
+  children: ReactNode
+  requiredPermission?: string
+  fallback?: ReactNode
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuth()
+export default function ProtectedRoute({
+  children,
+  requiredPermission,
+  fallback,
+}: ProtectedRouteProps) {
+  const { isAuthenticated, loading, hasPermission } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -18,22 +25,32 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (!loading && !isAuthenticated) {
       router.push("/login")
     }
-  }, [isAuthenticated, loading, router])
+    
+    // Se requerer permissão específica e não tiver, redirecionar para acesso negado
+    if (!loading && isAuthenticated && requiredPermission && !hasPermission(requiredPermission)) {
+      router.push("/acesso-negado")
+    }
+  }, [loading, isAuthenticated, requiredPermission, hasPermission, router])
 
-  // Enquanto estiver carregando, mostrar um indicador de carregamento
+  // Mostrar loader enquanto verifica autenticação
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
 
-  // Se não estiver autenticado, não renderizar nada (o redirecionamento acontecerá no useEffect)
+  // Se não estiver autenticado, não renderizar nada (redirecionamento acontecerá)
   if (!isAuthenticated) {
     return null
   }
 
-  // Se estiver autenticado, renderizar os filhos
+  // Se requerer permissão específica e não tiver, mostrar fallback ou não renderizar nada
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    return fallback || null
+  }
+
+  // Se estiver autenticado e tiver as permissões necessárias, renderizar o conteúdo
   return <>{children}</>
 }

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Edit, Trash, AlertCircle, Search, Filter, ArrowLeft } from 'lucide-react'
+import { Plus, Edit, Trash, AlertCircle, Search, Filter, ArrowLeft, ShieldAlert } from 'lucide-react'
 import { useRouter } from "next/navigation"
 import produtoService from "@/services/produtoService"
 import { useToast } from "@/components/ui/use-toast"
@@ -31,6 +31,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import ProtectedRoute from "@/components/auth/ProtectedRoute"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface Produto {
   id: number
@@ -43,6 +45,7 @@ interface Produto {
 
 export default function EstoquePage() {
   const router = useRouter()
+  const { hasPermission } = useAuth() // Adicionar o hook useAuth para verificar permissões
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [filteredProdutos, setFilteredProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
@@ -56,6 +59,11 @@ export default function EstoquePage() {
   const [showFilters, setShowFilters] = useState(false)
   const itemsPerPage = 5
   const { toast } = useToast()
+
+  // Verificar permissões
+  const canAdd = hasPermission("ESTOQUE_ADICIONAR")
+  const canEdit = hasPermission("ESTOQUE_EDITAR")
+  const canDelete = hasPermission("ESTOQUE_REMOVER")
 
   useEffect(() => {
     carregarProdutos()
@@ -160,240 +168,278 @@ export default function EstoquePage() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const paginatedProdutos = filteredProdutos.slice(startIndex, startIndex + itemsPerPage)
 
-  if (loading && produtos.length === 0) {
-    return (
-      <div className="container py-6 flex items-center justify-center h-[50vh]">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p>Carregando produtos...</p>
+  // Conteúdo da página protegido pela permissão ESTOQUE_VISUALIZAR
+  const pageContent = () => {
+    if (loading && produtos.length === 0) {
+      return (
+        <div className="container py-6 flex items-center justify-center h-[50vh]">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Carregando produtos...</p>
+          </div>
         </div>
+      )
+    }
+
+    return (
+      <div className="container py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => router.push("/dashboard")} 
+              className="flex items-center gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Voltar para Dashboard</span>
+            </Button>
+            <h1 className="text-3xl font-bold">Controle de Estoque</h1>
+          </div>
+          
+          {/* Botão de adicionar protegido pela permissão ESTOQUE_ADICIONAR */}
+          {canAdd ? (
+            <Button onClick={handleAddClick}>
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Produto
+            </Button>
+          ) : (
+            <Button disabled variant="outline" className="cursor-not-allowed">
+              <ShieldAlert className="mr-2 h-4 w-4" />
+              Sem permissão para adicionar
+            </Button>
+          )}
+        </div>
+
+        {error ? (
+          <Card className="mb-6 border-destructive">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="h-5 w-5" />
+                <p>{error}</p>
+              </div>
+              <Button onClick={carregarProdutos} className="mt-4">
+                Tentar novamente
+              </Button>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Filtros</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)}>
+                <Filter className="h-4 w-4 mr-2" />
+                {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+              </Button>
+            </div>
+          </CardHeader>
+          {showFilters && (
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Pesquisar</label>
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Nome ou código do produto"
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Categoria</label>
+                  <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas as categorias" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Todas as categorias</SelectItem>
+                      {categorias.map((categoria) => (
+                        <SelectItem key={categoria} value={categoria}>
+                          {categoria}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button variant="outline" onClick={handleClearFilters} className="w-full md:w-auto">
+                    Limpar Filtros
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Produtos</CardTitle>
+            <CardDescription>
+              Total de produtos: {filteredProdutos.length}
+              {filteredProdutos.length !== produtos.length && ` (filtrados de ${produtos.length})`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {filteredProdutos.length === 0 ? (
+              <div className="text-center py-6 text-muted-foreground">
+                {produtos.length === 0
+                  ? "Nenhum produto cadastrado. Clique em 'Adicionar Produto' para começar."
+                  : "Nenhum produto encontrado com os filtros aplicados."}
+              </div>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">Código</TableHead>
+                      <TableHead>Nome do Produto</TableHead>
+                      <TableHead className="hidden md:table-cell">Categoria</TableHead>
+                      <TableHead className="hidden md:table-cell text-right">Quantidade</TableHead>
+                      <TableHead className="hidden md:table-cell text-right">Preço Unit.</TableHead>
+                      <TableHead className="text-center w-[120px]">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedProdutos.map((produto) => (
+                      <TableRow key={produto.id}>
+                        <TableCell className="font-medium">{produto.codigo}</TableCell>
+                        <TableCell>
+                          {produto.nome}
+                          <div className="md:hidden text-xs text-muted-foreground mt-1">
+                            {produto.categoria} • {produto.quantidade} un. • R$ {produto.preco.toFixed(2)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">{produto.categoria}</TableCell>
+                        <TableCell className="hidden md:table-cell text-right">{produto.quantidade}</TableCell>
+                        <TableCell className="hidden md:table-cell text-right">R$ {produto.preco.toFixed(2)}</TableCell>
+                        <TableCell>
+                          <div className="flex justify-center gap-2">
+                            {/* Botão de editar protegido pela permissão ESTOQUE_EDITAR */}
+                            {canEdit ? (
+                              <Button size="icon" variant="ghost" onClick={() => handleEditClick(produto)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            ) : (
+                              <Button size="icon" variant="ghost" disabled className="cursor-not-allowed opacity-50">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
+                            
+                            {/* Botão de excluir protegido pela permissão ESTOQUE_REMOVER */}
+                            {canDelete ? (
+                              <Button size="icon" variant="ghost" onClick={() => handleDeleteClick(produto)}>
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            ) : (
+                              <Button size="icon" variant="ghost" disabled className="cursor-not-allowed opacity-50">
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+
+                {totalPages > 1 && (
+                  <div className="mt-4">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                          />
+                        </PaginationItem>
+
+                        {Array.from({ length: totalPages }).map((_, index) => {
+                          const page = index + 1
+                          // Mostrar apenas páginas próximas da atual
+                          if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationLink isActive={page === currentPage} onClick={() => setCurrentPage(page)}>
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            )
+                          } else if (page === currentPage - 2 || page === currentPage + 2) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            )
+                          }
+                          return null
+                        })}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Diálogo de Formulário - só abre se o usuário tiver permissão */}
+        {(canAdd || canEdit) && (
+          <Dialog open={formDialogOpen} onOpenChange={setFormDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{selectedProduto ? "Editar Produto" : "Adicionar Produto"}</DialogTitle>
+                <DialogDescription>
+                  Preencha os campos abaixo para {selectedProduto ? "editar o" : "adicionar um novo"} produto.
+                </DialogDescription>
+              </DialogHeader>
+              <ProdutoForm
+                produto={selectedProduto || undefined}
+                onSuccess={handleFormSuccess}
+                onCancel={() => setFormDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Diálogo de Confirmação de Exclusão - só abre se o usuário tiver permissão */}
+        {canDelete && (
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir o produto "{selectedProduto?.nome}"? Esta ação não pode ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground">
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     )
   }
 
+  // Envolver toda a página com o ProtectedRoute
   return (
-    <div className="container py-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => router.push("/dashboard")} 
-            className="flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Voltar para Dashboard</span>
-          </Button>
-          <h1 className="text-3xl font-bold">Controle de Estoque</h1>
-        </div>
-        <Button onClick={handleAddClick}>
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Produto
-        </Button>
-      </div>
-
-      {error ? (
-        <Card className="mb-6 border-destructive">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              <p>{error}</p>
-            </div>
-            <Button onClick={carregarProdutos} className="mt-4">
-              Tentar novamente
-            </Button>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Filtros</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters)}>
-              <Filter className="h-4 w-4 mr-2" />
-              {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-            </Button>
-          </div>
-        </CardHeader>
-        {showFilters && (
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Pesquisar</label>
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Nome ou código do produto"
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-2 block">Categoria</label>
-                <Select value={categoriaFilter} onValueChange={setCategoriaFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas as categorias" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as categorias</SelectItem>
-                    {categorias.map((categoria) => (
-                      <SelectItem key={categoria} value={categoria}>
-                        {categoria}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-end">
-                <Button variant="outline" onClick={handleClearFilters} className="w-full md:w-auto">
-                  Limpar Filtros
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        )}
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Produtos</CardTitle>
-          <CardDescription>
-            Total de produtos: {filteredProdutos.length}
-            {filteredProdutos.length !== produtos.length && ` (filtrados de ${produtos.length})`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredProdutos.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground">
-              {produtos.length === 0
-                ? "Nenhum produto cadastrado. Clique em 'Adicionar Produto' para começar."
-                : "Nenhum produto encontrado com os filtros aplicados."}
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">Código</TableHead>
-                    <TableHead>Nome do Produto</TableHead>
-                    <TableHead className="hidden md:table-cell">Categoria</TableHead>
-                    <TableHead className="hidden md:table-cell text-right">Quantidade</TableHead>
-                    <TableHead className="hidden md:table-cell text-right">Preço Unit.</TableHead>
-                    <TableHead className="text-center w-[120px]">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedProdutos.map((produto) => (
-                    <TableRow key={produto.id}>
-                      <TableCell className="font-medium">{produto.codigo}</TableCell>
-                      <TableCell>
-                        {produto.nome}
-                        <div className="md:hidden text-xs text-muted-foreground mt-1">
-                          {produto.categoria} • {produto.quantidade} un. • R$ {produto.preco.toFixed(2)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">{produto.categoria}</TableCell>
-                      <TableCell className="hidden md:table-cell text-right">{produto.quantidade}</TableCell>
-                      <TableCell className="hidden md:table-cell text-right">R$ {produto.preco.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <div className="flex justify-center gap-2">
-                          <Button size="icon" variant="ghost" onClick={() => handleEditClick(produto)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" onClick={() => handleDeleteClick(produto)}>
-                            <Trash className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {totalPages > 1 && (
-                <div className="mt-4">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                        />
-                      </PaginationItem>
-
-                      {Array.from({ length: totalPages }).map((_, index) => {
-                        const page = index + 1
-                        // Mostrar apenas páginas próximas da atual
-                        if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationLink isActive={page === currentPage} onClick={() => setCurrentPage(page)}>
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          )
-                        } else if (page === currentPage - 2 || page === currentPage + 2) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationEllipsis />
-                            </PaginationItem>
-                          )
-                        }
-                        return null
-                      })}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Diálogo de Formulário */}
-      <Dialog open={formDialogOpen} onOpenChange={setFormDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedProduto ? "Editar Produto" : "Adicionar Produto"}</DialogTitle>
-            <DialogDescription>
-              Preencha os campos abaixo para {selectedProduto ? "editar o" : "adicionar um novo"} produto.
-            </DialogDescription>
-          </DialogHeader>
-          <ProdutoForm
-            produto={selectedProduto || undefined}
-            onSuccess={handleFormSuccess}
-            onCancel={() => setFormDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Diálogo de Confirmação de Exclusão */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir o produto "{selectedProduto?.nome}"? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+    <ProtectedRoute requiredPermission="ESTOQUE_VISUALIZAR">
+      {pageContent()}
+    </ProtectedRoute>
   )
 }

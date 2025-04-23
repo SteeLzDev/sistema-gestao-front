@@ -399,6 +399,7 @@ module.exports = mod;
 
 var { g: global, __dirname } = __turbopack_context__;
 {
+// src/services/apiClient.ts
 __turbopack_context__.s({
     "default": (()=>__TURBOPACK__default__export__)
 });
@@ -406,8 +407,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib
 ;
 // Function to check if we're in the browser
 const isBrowser = ()=>"undefined" !== "undefined";
+// Verificar se a URL base inclui o contexto correto
+const API_BASE_URL = ("TURBOPACK compile-time value", "http://localhost:8080/sistema-gestao/api") || "http://localhost:8080/sistema-gestao/api";
+console.log("API Base URL:", API_BASE_URL);
 const apiClient = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].create({
-    baseURL: ("TURBOPACK compile-time value", "http://localhost:8080/sistema-gestao/api") || "http://localhost:8080/api",
+    baseURL: API_BASE_URL,
     headers: {
         "Content-Type": "application/json"
     }
@@ -420,15 +424,24 @@ apiClient.interceptors.request.use((config)=>{
     }
     return config;
 }, (error)=>{
+    console.error("Erro no interceptor de requisição:", error);
     return Promise.reject(error);
 });
 // Add response interceptor for error handling
 apiClient.interceptors.response.use((response)=>{
     return response;
 }, (error)=>{
+    console.error("Erro na resposta da API:", error);
     // Handle 401 Unauthorized errors
     if (error.response && error.response.status === 401) {
+        console.log("Erro 401: Não autorizado");
         // Clear auth data and redirect to login if in browser
+        if (isBrowser()) {
+            "TURBOPACK unreachable";
+        }
+    } else if (error.response && error.response.status === 403) {
+        console.log("Erro 403: Acesso negado");
+        // Redirecionar para página de acesso negado
         if (isBrowser()) {
             "TURBOPACK unreachable";
         }

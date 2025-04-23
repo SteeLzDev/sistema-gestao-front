@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { login, isAuthenticated, loading } = useAuth()
   const router = useRouter()
+  const { toast } = useToast()
 
   // Redirecionar se já estiver autenticado
   useEffect(() => {
@@ -38,7 +40,19 @@ export default function LoginPage() {
     try {
       setError(null)
       setIsLoading(true)
-      await login({ username, senha })
+
+      // Adicionar logs para depuração
+      console.log("Enviando dados de login:", {
+        username,
+        senha, // Usar 'senha' em vez de 'password'
+      })
+
+      await login({
+        username,
+        senha, // Usar 'senha' em vez de 'password'
+        password: senha, // Manter compatibilidade com versões anteriores
+      })
+
       router.push("/dashboard")
     } catch (error: any) {
       console.error("Erro no login:", error)
@@ -67,8 +81,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Sistema de Gestão</CardTitle>
           <CardDescription className="text-center">
@@ -93,6 +107,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoading}
+                className="border-gray-300 focus:border-primary"
               />
             </div>
 
@@ -105,10 +120,11 @@ export default function LoginPage() {
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 disabled={isLoading}
+                className="border-gray-300 focus:border-primary"
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -120,11 +136,10 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex justify-center border-t pt-4">
           <p className="text-sm text-muted-foreground">Sistema de Gestão de Inventário e Atendimento</p>
         </CardFooter>
       </Card>
     </div>
   )
 }
-

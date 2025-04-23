@@ -743,6 +743,10 @@ input::placeholder, textarea::placeholder {
   width: 3rem;
 }
 
+.w-16 {
+  width: 4rem;
+}
+
 .w-2 {
   width: .5rem;
 }
@@ -943,6 +947,10 @@ input::placeholder, textarea::placeholder {
 
 .cursor-default {
   cursor: default;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
 }
 
 .cursor-pointer {
@@ -1193,6 +1201,11 @@ input::placeholder, textarea::placeholder {
   border-color: #0000;
 }
 
+.border-gray-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity));
+}
+
 .border-t-transparent {
   border-top-color: #0000;
 }
@@ -1299,6 +1312,23 @@ input::placeholder, textarea::placeholder {
 .bg-yellow-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(254 249 195 / var(--tw-bg-opacity));
+}
+
+.bg-gradient-to-b {
+  background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+}
+
+.from-gray-50 {
+  --tw-gradient-from: #f9fafb var(--tw-gradient-from-position);
+  --tw-gradient-from-position: ;
+  --tw-gradient-to: #f9fafb00 var(--tw-gradient-from-position);
+  --tw-gradient-to-position: ;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-gray-100 {
+  --tw-gradient-to: #f3f4f6 var(--tw-gradient-to-position);
+  --tw-gradient-to-position: ;
 }
 
 .fill-current {
@@ -2013,6 +2043,10 @@ input::placeholder, textarea::placeholder {
   opacity: 1;
 }
 
+.focus\:border-primary:focus {
+  border-color: hsl(var(--primary));
+}
+
 .focus\:bg-accent:focus {
   background-color: hsl(var(--accent));
 }
@@ -2470,6 +2504,19 @@ input::placeholder, textarea::placeholder {
 :is(.dark .dark\:bg-gray-900) {
   --tw-bg-opacity: 1;
   background-color: rgb(17 24 39 / var(--tw-bg-opacity));
+}
+
+:is(.dark .dark\:from-gray-900) {
+  --tw-gradient-from: #111827 var(--tw-gradient-from-position);
+  --tw-gradient-from-position: ;
+  --tw-gradient-to: #11182700 var(--tw-gradient-from-position);
+  --tw-gradient-to-position: ;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+:is(.dark .dark\:to-gray-800) {
+  --tw-gradient-to: #1f2937 var(--tw-gradient-to-position);
+  --tw-gradient-to-position: ;
 }
 
 :is(.dark .dark\:focus-visible\:ring-destructive\/40:focus-visible) {

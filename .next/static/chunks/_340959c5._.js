@@ -686,15 +686,26 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$use$2d$toast$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/use-toast.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/axios/lib/axios.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature(), _s1 = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
 ;
+;
 const AuthContext = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["createContext"])(undefined);
 // Helper function to check if we're in browser
 const isBrowser = ()=>"object" !== "undefined";
+// Função para extrair permissões do token JWT
+function parseJwt(token) {
+    try {
+        return JSON.parse(atob(token.split(".")[1]));
+    } catch (e) {
+        console.error("Erro ao decodificar token JWT:", e);
+        return null;
+    }
+}
 function AuthProvider({ children }) {
     _s();
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
@@ -705,15 +716,24 @@ function AuthProvider({ children }) {
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "AuthProvider.useEffect": ()=>{
             if (isBrowser()) {
-                const storedUser = sessionStorage.getItem("user");
-                const token = sessionStorage.getItem("auth_token");
+                const storedUser = localStorage.getItem("user");
+                const token = localStorage.getItem("token");
                 if (token && storedUser) {
                     try {
-                        setUser(JSON.parse(storedUser));
+                        // Extrair permissões do token
+                        const tokenData = parseJwt(token);
+                        const permissions = tokenData?.permissoes || [];
+                        // Recuperar usuário armazenado
+                        const parsedUser = JSON.parse(storedUser);
+                        // Adicionar permissões ao usuário
+                        setUser({
+                            ...parsedUser,
+                            permissoes: permissions
+                        });
                     } catch (e) {
                         console.error("Erro ao parsear usuário armazenado:", e);
-                        sessionStorage.removeItem("user");
-                        sessionStorage.removeItem("auth_token");
+                        localStorage.removeItem("user");
+                        localStorage.removeItem("token");
                     }
                 }
                 setLoading(false);
@@ -725,45 +745,78 @@ function AuthProvider({ children }) {
         if (!isBrowser()) {
             "TURBOPACK unreachable";
         }
-        const token = sessionStorage.getItem("auth_token");
+        const token = localStorage.getItem("token");
         return !!token;
     };
     // Login function
     const login = async (credentials)=>{
         try {
             setLoading(true);
-            const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:8080/sistema-gestao/api")}/auth/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(credentials)
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || "Falha na autenticação");
-            }
-            const data = await response.json();
-            // Extract token and user data
-            const { token, ...userData } = data;
-            // Create user object
-            const loggedUser = {
-                id: userData.id || userData.usuario?.id,
-                username: userData.username || userData.usuario?.username,
-                nome: userData.nome || userData.usuario?.nome,
-                perfil: userData.perfil || userData.usuario?.perfil || "USER",
-                token
+            console.log("Iniciando login com:", credentials.username);
+            // URL sem /api/ para evitar duplicação
+            const baseUrl = ("TURBOPACK compile-time value", "http://localhost:8080/sistema-gestao/api") || "http://localhost:8080/sistema-gestao";
+            const loginUrl = `${baseUrl}/auth/login`;
+            console.log("URL de login:", loginUrl);
+            // Dados a serem enviados - garantir que o campo seja 'senha'
+            const loginData = {
+                username: credentials.username,
+                senha: credentials.senha || credentials.password
             };
-            // Store in sessionStorage (will be cleared when browser is closed)
-            if (isBrowser()) {
-                sessionStorage.setItem("auth_token", token);
-                sessionStorage.setItem("user", JSON.stringify(loggedUser));
+            console.log("Dados de login:", JSON.stringify(loginData, null, 2));
+            // Usar Axios com depuração detalhada
+            try {
+                const response = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib$2f$axios$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"])({
+                    method: "post",
+                    url: loginUrl,
+                    data: loginData,
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+                console.log("Resposta do login:", response.data);
+                // Extract token and user data
+                const { token, user } = response.data;
+                console.log("Token recebido:", token ? "Sim (comprimento: " + token.length + ")" : "Não");
+                console.log("Usuário recebido:", user);
+                console.log("Permissões recebidas:", user.permissoes);
+                // Create user object
+                const loggedUser = {
+                    id: user.id,
+                    username: user.username,
+                    nome: user.nome,
+                    perfil: user.perfil || "USER",
+                    permissoes: user.permissoes || [],
+                    token
+                };
+                // Store in localStorage
+                if (isBrowser()) {
+                    localStorage.setItem("token", token);
+                    console.log("Token armazenado em localStorage");
+                    localStorage.setItem("user", JSON.stringify(loggedUser));
+                    console.log("Usuário armazenado em localStorage");
+                }
+                setUser(loggedUser);
+                toast({
+                    title: "Login realizado com sucesso",
+                    description: `Bem-vindo, ${loggedUser.nome || loggedUser.username}!`
+                });
+                // Redirecionar para a página inicial após o login bem-sucedido
+                router.push("/dashboard");
+            } catch (axiosError) {
+                console.error("Erro do Axios:", axiosError);
+                if (axiosError.response) {
+                    console.error("Resposta de erro:", axiosError.response.data);
+                    console.error("Status:", axiosError.response.status);
+                    console.error("Cabeçalhos:", axiosError.response.headers);
+                    throw new Error(axiosError.response.data || "Falha na autenticação");
+                } else if (axiosError.request) {
+                    console.error("Requisição sem resposta:", axiosError.request);
+                    throw new Error("Não foi possível conectar ao servidor");
+                } else {
+                    console.error("Erro na configuração da requisição:", axiosError.message);
+                    throw new Error("Erro na configuração da requisição");
+                }
             }
-            setUser(loggedUser);
-            toast({
-                title: "Login realizado com sucesso",
-                description: `Bem-vindo, ${loggedUser.nome || loggedUser.username}!`
-            });
         } catch (error) {
             console.error("Erro no login:", error);
             toast({
@@ -779,8 +832,8 @@ function AuthProvider({ children }) {
     // Logout function
     const logout = ()=>{
         if (isBrowser()) {
-            sessionStorage.removeItem("auth_token");
-            sessionStorage.removeItem("user");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
         }
         setUser(null);
         toast({
@@ -790,24 +843,34 @@ function AuthProvider({ children }) {
         // Redirecionar para a página de login
         router.push("/login");
     };
+    // Função para verificar se o usuário tem uma permissão específica
+    const hasPermission = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useCallback"])({
+        "AuthProvider.useCallback[hasPermission]": (permission)=>{
+            if (!user) return false;
+            return user.permissoes?.includes(permission) || false;
+        }
+    }["AuthProvider.useCallback[hasPermission]"], [
+        user
+    ]);
     const value = {
         user,
         loading,
         isAuthenticated: !!user,
         login,
         logout,
-        checkAuth
+        checkAuth,
+        hasPermission
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(AuthContext.Provider, {
         value: value,
         children: children
     }, void 0, false, {
         fileName: "[project]/contexts/AuthContext.tsx",
-        lineNumber: 155,
+        lineNumber: 232,
         columnNumber: 10
     }, this);
 }
-_s(AuthProvider, "a/Gi5ymi3/KcYTuqJkTqv3W9xno=", false, function() {
+_s(AuthProvider, "VOXI0nxe9EuOdbOHruNogYV8aP4=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$use$2d$toast$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useToast"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]

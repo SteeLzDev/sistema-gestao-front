@@ -620,6 +620,15 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$use$2d$t
 const AuthContext = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createContext"])(undefined);
 // Helper function to check if we're in browser
 const isBrowser = ()=>"undefined" !== "undefined";
+// Função para extrair permissões do token JWT
+function parseJwt(token) {
+    try {
+        return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+        console.error("Erro ao decodificar token JWT:", e);
+        return null;
+    }
+}
 function AuthProvider({ children }) {
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
@@ -641,29 +650,37 @@ function AuthProvider({ children }) {
     const login = async (credentials)=>{
         try {
             setLoading(true);
-            const response = await fetch(`${("TURBOPACK compile-time value", "http://localhost:8080/sistema-gestao/api")}/auth/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
+            console.log("Iniciando login com:", credentials.username);
+            // URL sem /api/ para evitar duplicação
+            const baseUrl = ("TURBOPACK compile-time value", "http://localhost:8080/sistema-gestao/api") || "http://localhost:8080/sistema-gestao";
+            const loginUrl = `${baseUrl}/auth/login`;
+            console.log("URL de login:", loginUrl);
+            // Usar Axios em vez de fetch
+            const response = await axios({
+                method: 'post',
+                url: loginUrl,
+                data: {
+                    username: credentials.username,
+                    senha: credentials.password
                 },
-                body: JSON.stringify(credentials)
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || "Falha na autenticação");
-            }
-            const data = await response.json();
+            console.log("Resposta do login:", response.data);
             // Extract token and user data
-            const { token, ...userData } = data;
+            const { token, user } = response.data;
+            console.log("Token recebido:", token ? "Sim (comprimento: " + token.length + ")" : "Não");
             // Create user object
             const loggedUser = {
-                id: userData.id || userData.usuario?.id,
-                username: userData.username || userData.usuario?.username,
-                nome: userData.nome || userData.usuario?.nome,
-                perfil: userData.perfil || userData.usuario?.perfil || "USER",
+                id: user.id,
+                username: user.username,
+                nome: user.nome,
+                perfil: user.perfil || "USER",
+                permissoes: user.permissoes || [],
                 token
             };
-            // Store in sessionStorage (will be cleared when browser is closed)
+            // Store in localStorage
             if (isBrowser()) {
                 "TURBOPACK unreachable";
             }
@@ -672,11 +689,18 @@ function AuthProvider({ children }) {
                 title: "Login realizado com sucesso",
                 description: `Bem-vindo, ${loggedUser.nome || loggedUser.username}!`
             });
+            // Redirecionar para a página inicial após o login bem-sucedido
+            router.push("/dashboard");
         } catch (error) {
             console.error("Erro no login:", error);
+            let errorMessage = "Credenciais inválidas. Tente novamente.";
+            if (error.response) {
+                console.error("Resposta de erro:", error.response.data);
+                errorMessage = error.response.data || errorMessage;
+            }
             toast({
                 title: "Erro no login",
-                description: error.message || "Credenciais inválidas. Tente novamente.",
+                description: errorMessage,
                 variant: "destructive"
             });
             throw error;
@@ -697,20 +721,28 @@ function AuthProvider({ children }) {
         // Redirecionar para a página de login
         router.push("/login");
     };
+    // Função para verificar se o usuário tem uma permissão específica
+    const hasPermission = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((permission)=>{
+        if (!user) return false;
+        return user.permissoes?.includes(permission) || false;
+    }, [
+        user
+    ]);
     const value = {
         user,
         loading,
         isAuthenticated: !!user,
         login,
         logout,
-        checkAuth
+        checkAuth,
+        hasPermission
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(AuthContext.Provider, {
         value: value,
         children: children
     }, void 0, false, {
         fileName: "[project]/contexts/AuthContext.tsx",
-        lineNumber: 155,
+        lineNumber: 213,
         columnNumber: 10
     }, this);
 }

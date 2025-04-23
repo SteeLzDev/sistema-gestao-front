@@ -1,8 +1,9 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
+import axios from "axios"
 
 // Types
 export interface User {
@@ -10,12 +11,14 @@ export interface User {
   username: string
   nome: string
   perfil: string
+  permissoes?: string[] // Campo de permissões
   token?: string
 }
 
 export interface LoginCredentials {
   username: string
-  senha: string
+  password?: string // Opcional para compatibilidade
+  senha?: string // Adicionado para compatibilidade com o backend
 }
 
 interface AuthContextType {
@@ -25,12 +28,23 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>
   logout: () => void
   checkAuth: () => Promise<boolean>
+  hasPermission: (permission: string) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Helper function to check if we're in browser
 const isBrowser = () => typeof window !== "undefined"
+
+// Função para extrair permissões do token JWT
+function parseJwt(token: string) {
+  try {
+    return JSON.parse(atob(token.split(".")[1]))
+  } catch (e) {
+    console.error("Erro ao decodificar token JWT:", e)
+    return null
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -41,16 +55,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check if user is authenticated on page load
   useEffect(() => {
     if (isBrowser()) {
-      const storedUser = sessionStorage.getItem("user")
-      const token = sessionStorage.getItem("auth_token")
+      const storedUser = localStorage.getItem("user")
+      const token = localStorage.getItem("token")
 
       if (token && storedUser) {
         try {
-          setUser(JSON.parse(storedUser))
+          // Extrair permissões do token
+          const tokenData = parseJwt(token)
+          const permissions = tokenData?.permissoes || []
+
+          // Recuperar usuário armazenado
+          const parsedUser = JSON.parse(storedUser)
+
+          // Adicionar permissões ao usuário
+          setUser({
+            ...parsedUser,
+            permissoes: permissions,
+          })
         } catch (e) {
           console.error("Erro ao parsear usuário armazenado:", e)
-          sessionStorage.removeItem("user")
-          sessionStorage.removeItem("auth_token")
+          localStorage.removeItem("user")
+          localStorage.removeItem("token")
         }
       }
 
@@ -62,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async (): Promise<boolean> => {
     if (!isBrowser()) return false
 
-    const token = sessionStorage.getItem("auth_token")
+    const token = localStorage.getItem("token")
     return !!token
   }
 
@@ -71,45 +96,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true)
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
-      })
+      console.log("Iniciando login com:", credentials.username)
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(errorText || "Falha na autenticação")
+      // URL sem /api/ para evitar duplicação
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/sistema-gestao"
+      const loginUrl = `${baseUrl}/auth/login`
+      console.log("URL de login:", loginUrl)
+
+      // Dados a serem enviados - garantir que o campo seja 'senha'
+      const loginData = {
+        username: credentials.username,
+        senha: credentials.senha || credentials.password, // Usar 'senha' com fallback para 'password'
       }
 
-      const data = await response.json()
+      console.log("Dados de login:", JSON.stringify(loginData, null, 2))
 
-      // Extract token and user data
-      const { token, ...userData } = data
+      // Usar Axios com depuração detalhada
+      try {
+        const response = await axios({
+          method: "post",
+          url: loginUrl,
+          data: loginData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
 
-      // Create user object
-      const loggedUser: User = {
-        id: userData.id || userData.usuario?.id,
-        username: userData.username || userData.usuario?.username,
-        nome: userData.nome || userData.usuario?.nome,
-        perfil: userData.perfil || userData.usuario?.perfil || "USER",
-        token,
+        console.log("Resposta do login:", response.data)
+
+        // Extract token and user data
+        const { token, user } = response.data
+
+        console.log("Token recebido:", token ? "Sim (comprimento: " + token.length + ")" : "Não")
+        console.log("Usuário recebido:", user)
+        console.log("Permissões recebidas:", user.permissoes)
+
+        // Create user object
+        const loggedUser: User = {
+          id: user.id,
+          username: user.username,
+          nome: user.nome,
+          perfil: user.perfil || "USER",
+          permissoes: user.permissoes || [],
+          token,
+        }
+
+        // Store in localStorage
+        if (isBrowser()) {
+          localStorage.setItem("token", token)
+          console.log("Token armazenado em localStorage")
+
+          localStorage.setItem("user", JSON.stringify(loggedUser))
+          console.log("Usuário armazenado em localStorage")
+        }
+
+        setUser(loggedUser)
+
+        toast({
+          title: "Login realizado com sucesso",
+          description: `Bem-vindo, ${loggedUser.nome || loggedUser.username}!`,
+        })
+
+        // Redirecionar para a página inicial após o login bem-sucedido
+        router.push("/dashboard")
+      } catch (axiosError: any) {
+        console.error("Erro do Axios:", axiosError)
+
+        if (axiosError.response) {
+          console.error("Resposta de erro:", axiosError.response.data)
+          console.error("Status:", axiosError.response.status)
+          console.error("Cabeçalhos:", axiosError.response.headers)
+
+          throw new Error(axiosError.response.data || "Falha na autenticação")
+        } else if (axiosError.request) {
+          console.error("Requisição sem resposta:", axiosError.request)
+          throw new Error("Não foi possível conectar ao servidor")
+        } else {
+          console.error("Erro na configuração da requisição:", axiosError.message)
+          throw new Error("Erro na configuração da requisição")
+        }
       }
-
-      // Store in sessionStorage (will be cleared when browser is closed)
-      if (isBrowser()) {
-        sessionStorage.setItem("auth_token", token)
-        sessionStorage.setItem("user", JSON.stringify(loggedUser))
-      }
-
-      setUser(loggedUser)
-
-      toast({
-        title: "Login realizado com sucesso",
-        description: `Bem-vindo, ${loggedUser.nome || loggedUser.username}!`,
-      })
     } catch (error: any) {
       console.error("Erro no login:", error)
 
@@ -128,8 +194,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout function
   const logout = () => {
     if (isBrowser()) {
-      sessionStorage.removeItem("auth_token")
-      sessionStorage.removeItem("user")
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
     }
 
     setUser(null)
@@ -143,6 +209,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login")
   }
 
+  // Função para verificar se o usuário tem uma permissão específica
+  const hasPermission = useCallback(
+    (permission: string) => {
+      if (!user) return false
+
+      return user.permissoes?.includes(permission) || false
+    },
+    [user],
+  )
+
   const value = {
     user,
     loading,
@@ -150,6 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     checkAuth,
+    hasPermission,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -163,4 +240,3 @@ export function useAuth() {
   }
   return context
 }
-

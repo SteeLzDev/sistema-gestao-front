@@ -4,9 +4,16 @@ import dashboardService from "./dashboardService"
 
 // Serviço de autenticação
 export const authService = {
-  login: async (credentials: { email: string; senha: string }) => {
+  login: async (credentials: { username: string; password: string }) => {
     try {
-      const response = await apiClient.post("/auth/login", credentials)
+      // Certifique-se de que a URL está correta
+      console.log("Tentando login com:", credentials.username);
+      const response = await apiClient.post("/auth/login", {
+        username: credentials.username,
+        senha: credentials.password
+      })
+      
+      console.log("Resposta do login:", response.data);
       return response
     } catch (error) {
       console.error("Erro ao fazer login:", error)

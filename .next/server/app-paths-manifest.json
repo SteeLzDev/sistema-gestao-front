@@ -1,5 +1,15 @@
 {
+  "/configuracoes/page": "app/configuracoes/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/estoque/adicionar/page": "app/estoque/adicionar/page.js",
+  "/estoque/page": "app/estoque/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/login/page": "app/login/page.js"
+  "/fila/adicionar/page": "app/fila/adicionar/page.js",
+  "/fila/page": "app/fila/page.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/relatorios/page": "app/relatorios/page.js",
+  "/vendas/detalhes/page": "app/vendas/detalhes/page.js",
+  "/vendas/page": "app/vendas/page.js",
+  "/vendas/simples/page": "app/vendas/simples/page.js"
 }

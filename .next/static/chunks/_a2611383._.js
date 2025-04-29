@@ -779,30 +779,57 @@ function Header() {
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                    href: "/fila",
-                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/fila" ? "text-foreground" : "text-foreground/60"}`,
-                                    children: "Fila"
+                                    href: "/estoque",
+                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/estoque" ? "text-foreground" : "text-foreground/60"}`,
+                                    children: "Estoque"
                                 }, void 0, false, {
                                     fileName: "[project]/components/header-no-theme.tsx",
                                     lineNumber: 25,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                    href: "/clientes",
-                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/clientes" ? "text-foreground" : "text-foreground/60"}`,
-                                    children: "Clientes"
+                                    href: "/vendas",
+                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/vendas" ? "text-foreground" : "text-foreground/60"}`,
+                                    children: "Vendas"
                                 }, void 0, false, {
                                     fileName: "[project]/components/header-no-theme.tsx",
                                     lineNumber: 33,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                    href: "/servicos",
-                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/servicos" ? "text-foreground" : "text-foreground/60"}`,
-                                    children: "Serviços"
+                                    href: "/fila",
+                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/fila" ? "text-foreground" : "text-foreground/60"}`,
+                                    children: "Fila de Clientes"
                                 }, void 0, false, {
                                     fileName: "[project]/components/header-no-theme.tsx",
                                     lineNumber: 41,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                    href: "/relatorios",
+                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/relatorios" ? "text-foreground" : "text-foreground/60"}`,
+                                    children: "Relatórios"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/header-no-theme.tsx",
+                                    lineNumber: 49,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                    href: "/usuarios",
+                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/usuarios" ? "text-foreground" : "text-foreground/60"}`,
+                                    children: "Usuários"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/header-no-theme.tsx",
+                                    lineNumber: 57,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                                    href: "/configuracoes",
+                                    className: `transition-colors hover:text-foreground/80 ${pathname === "/configuracoes" ? "text-foreground" : "text-foreground/60"}`,
+                                    children: "Configurações"
+                                }, void 0, false, {
+                                    fileName: "[project]/components/header-no-theme.tsx",
+                                    lineNumber: 65,
                                     columnNumber: 13
                                 }, this)
                             ]
@@ -823,12 +850,12 @@ function Header() {
                         className: "w-full flex-1 md:w-auto md:flex-none"
                     }, void 0, false, {
                         fileName: "[project]/components/header-no-theme.tsx",
-                        lineNumber: 52,
+                        lineNumber: 76,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/components/header-no-theme.tsx",
-                    lineNumber: 51,
+                    lineNumber: 75,
                     columnNumber: 9
                 }, this)
             ]

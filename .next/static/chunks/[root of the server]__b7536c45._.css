@@ -580,10 +580,6 @@ input::placeholder, textarea::placeholder {
   top: .5rem;
 }
 
-.top-2\.5 {
-  top: .625rem;
-}
-
 .top-4 {
   top: 1rem;
 }
@@ -647,6 +643,11 @@ input::placeholder, textarea::placeholder {
   margin-bottom: .25rem;
 }
 
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
 .mb-1 {
   margin-bottom: .25rem;
 }
@@ -665,6 +666,10 @@ input::placeholder, textarea::placeholder {
 
 .ml-1 {
   margin-left: .25rem;
+}
+
+.ml-2 {
+  margin-left: .5rem;
 }
 
 .ml-4 {
@@ -709,6 +714,10 @@ input::placeholder, textarea::placeholder {
 
 .inline-block {
   display: inline-block;
+}
+
+.inline {
+  display: inline;
 }
 
 .flex {
@@ -847,10 +856,6 @@ input::placeholder, textarea::placeholder {
   width: 3rem;
 }
 
-.w-16 {
-  width: 4rem;
-}
-
 .w-2 {
   width: .5rem;
 }
@@ -915,14 +920,6 @@ input::placeholder, textarea::placeholder {
   width: 1.2rem;
 }
 
-.w-\[100px\] {
-  width: 100px;
-}
-
-.w-\[120px\] {
-  width: 120px;
-}
-
 .w-\[50px\] {
   width: 50px;
 }
@@ -962,6 +959,10 @@ input::placeholder, textarea::placeholder {
 
 .max-w-md {
   max-width: 28rem;
+}
+
+.max-w-2xl {
+  max-width: 42rem;
 }
 
 .flex-1 {
@@ -1051,10 +1052,6 @@ input::placeholder, textarea::placeholder {
 
 .cursor-default {
   cursor: default;
-}
-
-.cursor-not-allowed {
-  cursor: not-allowed;
 }
 
 .cursor-pointer {
@@ -1232,6 +1229,10 @@ input::placeholder, textarea::placeholder {
   white-space: nowrap;
 }
 
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+
 .rounded-full {
   border-radius: 9999px;
 }
@@ -1281,6 +1282,11 @@ input::placeholder, textarea::placeholder {
   border-color: rgb(245 158 11 / var(--tw-border-opacity));
 }
 
+.border-blue-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(191 219 254 / var(--tw-border-opacity));
+}
+
 .border-border {
   border-color: hsl(var(--border));
 }
@@ -1291,6 +1297,11 @@ input::placeholder, textarea::placeholder {
 
 .border-destructive\/50 {
   border-color: hsl(var(--destructive) / .5);
+}
+
+.border-gray-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity));
 }
 
 .border-input {
@@ -1305,9 +1316,24 @@ input::placeholder, textarea::placeholder {
   border-color: #0000;
 }
 
-.border-gray-300 {
+.border-amber-200 {
   --tw-border-opacity: 1;
-  border-color: rgb(209 213 219 / var(--tw-border-opacity));
+  border-color: rgb(253 230 138 / var(--tw-border-opacity));
+}
+
+.border-amber-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(252 211 77 / var(--tw-border-opacity));
+}
+
+.border-purple-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(233 213 255 / var(--tw-border-opacity));
+}
+
+.border-purple-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(216 180 254 / var(--tw-border-opacity));
 }
 
 .border-t-transparent {
@@ -1344,6 +1370,11 @@ input::placeholder, textarea::placeholder {
   background-color: #000c;
 }
 
+.bg-blue-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 246 255 / var(--tw-bg-opacity));
+}
+
 .bg-border {
   background-color: hsl(var(--border));
 }
@@ -1354,11 +1385,6 @@ input::placeholder, textarea::placeholder {
 
 .bg-destructive {
   background-color: hsl(var(--destructive));
-}
-
-.bg-gray-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
 }
 
 .bg-gray-200 {
@@ -1418,6 +1444,16 @@ input::placeholder, textarea::placeholder {
   background-color: rgb(254 249 195 / var(--tw-bg-opacity));
 }
 
+.bg-purple-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 232 255 / var(--tw-bg-opacity));
+}
+
+.bg-purple-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(250 245 255 / var(--tw-bg-opacity));
+}
+
 .bg-gradient-to-b {
   background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
 }
@@ -1465,6 +1501,10 @@ input::placeholder, textarea::placeholder {
 
 .p-6 {
   padding: 1.5rem;
+}
+
+.p-8 {
+  padding: 2rem;
 }
 
 .px-2 {
@@ -1530,6 +1570,11 @@ input::placeholder, textarea::placeholder {
 .py-6 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
+}
+
+.py-8 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
 }
 
 .pb-2 {
@@ -1668,6 +1713,11 @@ input::placeholder, textarea::placeholder {
   color: rgb(146 64 14 / var(--tw-text-opacity));
 }
 
+.text-blue-800 {
+  --tw-text-opacity: 1;
+  color: rgb(30 64 175 / var(--tw-text-opacity));
+}
+
 .text-card-foreground {
   color: hsl(var(--card-foreground));
 }
@@ -1750,6 +1800,11 @@ input::placeholder, textarea::placeholder {
 .text-yellow-800 {
   --tw-text-opacity: 1;
   color: rgb(133 77 14 / var(--tw-text-opacity));
+}
+
+.text-purple-800 {
+  --tw-text-opacity: 1;
+  color: rgb(107 33 168 / var(--tw-text-opacity));
 }
 
 .underline-offset-4 {
@@ -2111,6 +2166,16 @@ input::placeholder, textarea::placeholder {
 .hover\:bg-yellow-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(254 249 195 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-amber-200:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(253 230 138 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-purple-200:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(233 213 255 / var(--tw-bg-opacity));
 }
 
 .hover\:text-accent-foreground:hover {
@@ -2605,11 +2670,6 @@ input::placeholder, textarea::placeholder {
   background-color: rgb(55 65 81 / var(--tw-bg-opacity));
 }
 
-:is(.dark .dark\:bg-gray-900) {
-  --tw-bg-opacity: 1;
-  background-color: rgb(17 24 39 / var(--tw-bg-opacity));
-}
-
 :is(.dark .dark\:from-gray-900) {
   --tw-gradient-from: #111827 var(--tw-gradient-from-position);
   --tw-gradient-from-position: ;
@@ -2819,6 +2879,10 @@ input::placeholder, textarea::placeholder {
 
   .lg\:grid-cols-7 {
     grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  .lg\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -710,31 +710,34 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$axios$2f$lib
 const AuthContext = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createContext"])(undefined);
 // Helper function to check if we're in browser
 const isBrowser = ()=>"undefined" !== "undefined";
-// Função para extrair permissões do token JWT
-function parseJwt(token) {
-    try {
-        return JSON.parse(atob(token.split(".")[1]));
-    } catch (e) {
-        console.error("Erro ao decodificar token JWT:", e);
-        return null;
-    }
-}
 function AuthProvider({ children }) {
     const [user, setUser] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(true);
     const { toast } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$use$2d$toast$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useToast"])();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
+    // Função para carregar o usuário do localStorage
+    const loadUserFromStorage = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])(()=>{
+        if (!isBrowser()) return false;
+        "TURBOPACK unreachable";
+    }, []);
     // Check if user is authenticated on page load
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         if (isBrowser()) {
             "TURBOPACK unreachable";
         }
-    }, []);
+    }, [
+        loadUserFromStorage
+    ]);
     // Function to check authentication status
     const checkAuth = async ()=>{
         if (!isBrowser()) return false;
         "TURBOPACK unreachable";
         const token = undefined;
+    };
+    // Função para atualizar a autenticação
+    const refreshAuth = async ()=>{
+        if (!isBrowser()) return;
+        "TURBOPACK unreachable";
     };
     // Login function
     const login = async (credentials)=>{
@@ -743,6 +746,7 @@ function AuthProvider({ children }) {
             console.log("Iniciando login com:", credentials.username);
             // URL sem /api/ para evitar duplicação
             const baseUrl = ("TURBOPACK compile-time value", "http://localhost:8080/sistema-gestao/api") || "http://localhost:8080/sistema-gestao";
+            // Caminho corrigido para login (sem /api/ duplicado)
             const loginUrl = `${baseUrl}/auth/login`;
             console.log("URL de login:", loginUrl);
             // Dados a serem enviados - garantir que o campo seja 'senha'
@@ -767,13 +771,20 @@ function AuthProvider({ children }) {
                 console.log("Token recebido:", token ? "Sim (comprimento: " + token.length + ")" : "Não");
                 console.log("Usuário recebido:", user);
                 console.log("Permissões recebidas:", user.permissoes);
+                // Garantir que permissões seja um array
+                const permissoes = Array.isArray(user.permissoes) ? user.permissoes : [];
+                // Adicionar a permissão VENDA_VISUALIZAR se não existir
+                if (!permissoes.includes("VENDA_VISUALIZAR") && permissoes.includes("VENDAS_VISUALIZAR")) {
+                    console.log("Adicionando permissão VENDA_VISUALIZAR ao usuário");
+                    permissoes.push("VENDA_VISUALIZAR");
+                }
                 // Create user object
                 const loggedUser = {
                     id: user.id,
                     username: user.username,
-                    nome: user.nome,
+                    nome: user.nome || user.username,
                     perfil: user.perfil || "USER",
-                    permissoes: user.permissoes || [],
+                    permissoes: permissoes,
                     token
                 };
                 // Store in localStorage
@@ -793,7 +804,7 @@ function AuthProvider({ children }) {
                     console.error("Resposta de erro:", axiosError.response.data);
                     console.error("Status:", axiosError.response.status);
                     console.error("Cabeçalhos:", axiosError.response.headers);
-                    throw new Error(axiosError.response.data || "Falha na autenticação");
+                    throw new Error(axiosError.response.data?.message || axiosError.response.data || "Falha na autenticação");
                 } else if (axiosError.request) {
                     console.error("Requisição sem resposta:", axiosError.request);
                     throw new Error("Não foi possível conectar ao servidor");
@@ -829,8 +840,88 @@ function AuthProvider({ children }) {
     };
     // Função para verificar se o usuário tem uma permissão específica
     const hasPermission = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useCallback"])((permission)=>{
-        if (!user) return false;
-        return user.permissoes?.includes(permission) || false;
+        if (!user || !user.permissoes) {
+            console.warn("Verificação de permissão falhou: usuário ou permissões não definidos");
+            return false;
+        }
+        // Verificar se o usuário é ADMIN (tem todas as permissões)
+        if (user.perfil === "ADMIN") {
+            return true;
+        }
+        // Verificar se a permissão existe diretamente
+        if (user.permissoes.includes(permission)) {
+            return true;
+        }
+        // Mapeamentos comuns (frontend para backend e vice-versa)
+        const mappings = {
+            // Frontend para Backend
+            view_inventory: "ESTOQUE_VISUALIZAR",
+            add_inventory: "ESTOQUE_ADICIONAR",
+            edit_inventory: "ESTOQUE_EDITAR",
+            delete_inventory: "ESTOQUE_REMOVER",
+            view_sales: "VENDAS_VISUALIZAR",
+            create_sale: "VENDAS_CRIAR",
+            cancel_sale: "VENDAS_CANCELAR",
+            view_queue: "FILA_VISUALIZAR",
+            manage_queue: "FILA_GERENCIAR",
+            view_reports: "RELATORIOS_VISUALIZAR",
+            export_reports: "RELATORIOS_EXPORTAR",
+            view_users: "USUARIOS_VISUALIZAR",
+            create_user: "USUARIOS_CRIAR",
+            edit_user: "USUARIOS_EDITAR",
+            delete_user: "USUARIOS_REMOVER",
+            manage_permissions: "USUARIOS_PERMISSOES",
+            view_settings: "CONFIGURACOES_VISUALIZAR",
+            edit_settings: "CONFIGURACOES_EDITAR",
+            // Backend para Frontend
+            ESTOQUE_VISUALIZAR: "view_inventory",
+            ESTOQUE_ADICIONAR: "add_inventory",
+            ESTOQUE_EDITAR: "edit_inventory",
+            ESTOQUE_REMOVER: "delete_inventory",
+            VENDAS_VISUALIZAR: "view_sales",
+            VENDA_VISUALIZAR: "view_sales",
+            VENDAS_CRIAR: "create_sale",
+            VENDA_CRIAR: "create_sale",
+            VENDAS_CANCELAR: "cancel_sale",
+            VENDA_CANCELAR: "cancel_sale",
+            FILA_VISUALIZAR: "view_queue",
+            FILA_GERENCIAR: "manage_queue",
+            RELATORIOS_VISUALIZAR: "view_reports",
+            RELATORIOS_EXPORTAR: "export_reports",
+            USUARIOS_VISUALIZAR: "view_users",
+            USUARIOS_CRIAR: "create_user",
+            USUARIOS_EDITAR: "edit_user",
+            USUARIOS_REMOVER: "delete_user",
+            USUARIOS_PERMISSOES: "manage_permissions",
+            CONFIGURACOES_VISUALIZAR: "view_settings",
+            CONFIGURACOES_EDITAR: "edit_settings"
+        };
+        // Verificar se existe um mapeamento para a permissão
+        const mappedPermission = mappings[permission];
+        if (mappedPermission && user.permissoes.includes(mappedPermission)) {
+            return true;
+        }
+        // Verificar se a permissão sem o "S" existe (para compatibilidade com o backend)
+        if (permission === "VENDAS_VISUALIZAR" && user.permissoes.includes("VENDA_VISUALIZAR")) {
+            return true;
+        }
+        if (permission === "VENDAS_CRIAR" && user.permissoes.includes("VENDA_CRIAR")) {
+            return true;
+        }
+        if (permission === "VENDAS_CANCELAR" && user.permissoes.includes("VENDA_CANCELAR")) {
+            return true;
+        }
+        // Verificar se a permissão com o "S" existe (para compatibilidade com o backend)
+        if (permission === "VENDA_VISUALIZAR" && user.permissoes.includes("VENDAS_VISUALIZAR")) {
+            return true;
+        }
+        if (permission === "VENDA_CRIAR" && user.permissoes.includes("VENDAS_CRIAR")) {
+            return true;
+        }
+        if (permission === "VENDA_CANCELAR" && user.permissoes.includes("VENDAS_CANCELAR")) {
+            return true;
+        }
+        return false;
     }, [
         user
     ]);
@@ -841,14 +932,15 @@ function AuthProvider({ children }) {
         login,
         logout,
         checkAuth,
-        hasPermission
+        hasPermission,
+        refreshAuth
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(AuthContext.Provider, {
         value: value,
         children: children
     }, void 0, false, {
         fileName: "[project]/contexts/AuthContext.tsx",
-        lineNumber: 232,
+        lineNumber: 397,
         columnNumber: 10
     }, this);
 }

@@ -2,42 +2,35 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ShieldAlert } from 'lucide-react'
+import { ShieldAlert, Home, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/contexts/AuthContext"
 
-export default function AcessoNegadoPage() {
+export default function AccessDeniedPage() {
   const router = useRouter()
-  const { user } = useAuth()
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="mx-auto max-w-md">
+        <CardHeader>
           <div className="flex justify-center mb-4">
-            <ShieldAlert className="h-16 w-16 text-destructive" />
+            <ShieldAlert className="h-12 w-12 text-destructive" />
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Acesso Negado</CardTitle>
-          <CardDescription className="text-center">
-            Você não tem permissão para acessar esta página.
-          </CardDescription>
+          <CardTitle className="text-center text-2xl">Acesso Negado</CardTitle>
+          <CardDescription className="text-center">Você não tem permissão para acessar este recurso.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center space-y-4">
-            <p>
-              Seu perfil atual ({user?.perfil}) não possui as permissões necessárias para acessar este recurso.
-            </p>
-            <p>
-              Entre em contato com o administrador do sistema caso acredite que deveria ter acesso a esta funcionalidade.
-            </p>
-          </div>
+          <p className="text-center text-muted-foreground">
+            Se você acredita que deveria ter acesso a esta página, entre em contato com o administrador do sistema.
+          </p>
         </CardContent>
-        <CardFooter className="flex justify-center space-x-4">
-          <Button variant="outline" onClick={() => router.push("/dashboard")}>
-            Voltar para Dashboard
-          </Button>
-          <Button onClick={() => router.back()}>
+        <CardFooter className="flex justify-center gap-4">
+          <Button variant="outline" onClick={() => router.back()}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
+          </Button>
+          <Button onClick={() => router.push("/dashboard")}>
+            <Home className="mr-2 h-4 w-4" />
+            Ir para Dashboard
           </Button>
         </CardFooter>
       </Card>

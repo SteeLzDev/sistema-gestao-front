@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation"
 import { Overview } from "@/components/dashboard/overview"
 import type { DateRange } from "react-day-picker"
 import { jsPDF } from "jspdf"
+import { BackButton } from "@/components/ui/BackButton"
 
 export default function RelatoriosPage() {
   const router = useRouter()
@@ -215,15 +216,7 @@ export default function RelatoriosPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => router.push("/dashboard")} 
-            className="flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Voltar para Dashboard</span>
-          </Button>
+          <BackButton />
           <h2 className="text-3xl font-bold tracking-tight">Relatórios Financeiros</h2>
         </div>
         <div className="flex items-center gap-2">

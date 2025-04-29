@@ -1,212 +1,86 @@
-import apiClient from "./apiClient"
-import filaService from "./filaService"
-import dashboardService from "./dashboardService"
+import axios from "axios"
 
-// Serviço de autenticação
-export const authService = {
-  login: async (credentials: { username: string; password: string }) => {
-    try {
-      // Certifique-se de que a URL está correta
-      console.log("Tentando login com:", credentials.username);
-      const response = await apiClient.post("/auth/login", {
-        username: credentials.username,
-        senha: credentials.password
-      })
-      
-      console.log("Resposta do login:", response.data);
-      return response
-    } catch (error) {
-      console.error("Erro ao fazer login:", error)
-      throw error
+// Function to check if we're in the browser
+const isBrowser = () => typeof window !== "undefined"
+
+// URL base com o contexto correto
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/sistema-gestao"
+console.log("API Base URL:", API_BASE_URL)
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+})
+
+// Add request interceptor for authentication
+api.interceptors.request.use(
+  (config) => {
+    console.log(`[API] Enviando requisição para: ${config.method?.toUpperCase()} ${config.url}`)
+
+    // Add authentication token if available
+    if (isBrowser()) {
+      // Verificar em localStorage primeiro (onde o token é armazenado após login)
+      const token = localStorage.getItem("token")
+
+      if (token) {
+        console.log("[API] Token encontrado:", token.substring(0, 10) + "...")
+
+        // Garantir que o token esteja no formato correto
+        config.headers.Authorization = `Bearer ${token.trim()}`
+        console.log("[API] Cabeçalho Authorization configurado:", config.headers.Authorization.substring(0, 20) + "...")
+      } else {
+        console.warn("[API] Token não encontrado!")
+
+        // Se não houver token e a rota não for de autenticação, redirecionar para login
+        if (!config.url?.includes("/auth/login")) {
+          console.warn("[API] Token não encontrado para requisição:", config.url)
+          // Não redirecionamos aqui para evitar o loop infinito
+          // Apenas logamos o erro e deixamos a requisição continuar
+        }
+      }
     }
-  },
 
-  isAuthenticated: () => {
-    return !!localStorage.getItem("token")
+    return config
   },
+  (error) => {
+    console.error("[API] Erro no interceptor de requisição:", error)
+    return Promise.reject(error)
+  },
+)
 
-  getCurrentUser: () => {
-    const userStr = localStorage.getItem("user")
-    if (userStr) {
-      return JSON.parse(userStr)
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => {
+    console.log(`[API] Resposta recebida: ${response.status} ${response.statusText}`)
+    return response
+  },
+  (error) => {
+    console.error("[API] Erro na resposta:", error.message)
+
+    if (error.response) {
+      console.error(`[API] Status: ${error.response.status}`)
+      console.error(`[API] Dados: ${JSON.stringify(error.response.data)}`)
     }
-    return null
-  },
 
-  logout: () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    window.location.href = "/login"
-  },
-}
+    // Handle 401 Unauthorized errors
+    if (error.response && error.response.status === 401) {
+      console.warn("[API] Erro 401: Não autorizado")
 
-// Serviço de produtos
-export const produtoService = {
-  listarProdutos: async () => {
-    try {
-      const response = await apiClient.get("/produtos")
-      return response.data
-    } catch (error) {
-      console.error("Erro ao listar produtos:", error)
-      throw error
+      // Não redirecionamos automaticamente para evitar loops
+      // Apenas logamos o erro e deixamos o componente tratar
     }
-  },
+    // Handle 403 Forbidden errors
+    else if (error.response && error.response.status === 403) {
+      console.warn("[API] Erro 403: Acesso negado")
 
-  buscarProduto: async (id: number) => {
-    try {
-      const response = await apiClient.get(`/produtos/${id}`)
-      return response.data
-    } catch (error) {
-      console.error(`Erro ao buscar produto ${id}:`, error)
-      throw error
+      // Não redirecionamos automaticamente para evitar loops
+      // Apenas logamos o erro e deixamos o componente tratar
     }
+
+    return Promise.reject(error)
   },
+)
 
-  criarProduto: async (produto: any) => {
-    try {
-      const response = await apiClient.post("/produtos", produto)
-      return response.data
-    } catch (error) {
-      console.error("Erro ao criar produto:", error)
-      throw error
-    }
-  },
-
-  atualizarProduto: async (id: number, produto: any) => {
-    try {
-      const response = await apiClient.put(`/produtos/${id}`, produto)
-      return response.data
-    } catch (error) {
-      console.error(`Erro ao atualizar produto ${id}:`, error)
-      throw error
-    }
-  },
-
-  removerProduto: async (id: number) => {
-    try {
-      await apiClient.delete(`/produtos/${id}`)
-    } catch (error) {
-      console.error(`Erro ao remover produto ${id}:`, error)
-      throw error
-    }
-  },
-}
-
-// Serviço de usuários
-export const usuarioService = {
-  listarUsuarios: async () => {
-    try {
-      const response = await apiClient.get("/usuarios")
-      return response.data
-    } catch (error) {
-      console.error("Erro ao listar usuários:", error)
-      throw error
-    }
-  },
-
-  buscarUsuario: async (id: number) => {
-    try {
-      const response = await apiClient.get(`/usuarios/${id}`)
-      return response.data
-    } catch (error) {
-      console.error(`Erro ao buscar usuário ${id}:`, error)
-      throw error
-    }
-  },
-
-  criarUsuario: async (usuario: any) => {
-    try {
-      const response = await apiClient.post("/usuarios", usuario)
-      return response.data
-    } catch (error) {
-      console.error("Erro ao criar usuário:", error)
-      throw error
-    }
-  },
-
-  atualizarUsuario: async (id: number, usuario: any) => {
-    try {
-      const response = await apiClient.put(`/usuarios/${id}`, usuario)
-      return response.data
-    } catch (error) {
-      console.error(`Erro ao atualizar usuário ${id}:`, error)
-      throw error
-    }
-  },
-
-  removerUsuario: async (id: number) => {
-    try {
-      await apiClient.delete(`/usuarios/${id}`)
-    } catch (error) {
-      console.error(`Erro ao remover usuário ${id}:`, error)
-      throw error
-    }
-  },
-}
-
-// Serviço de vendas
-export const vendaService = {
-  listarVendas: async () => {
-    try {
-      const response = await apiClient.get("/vendas")
-      return response.data
-    } catch (error) {
-      console.error("Erro ao listar vendas:", error)
-      throw error
-    }
-  },
-
-  buscarVenda: async (id: number) => {
-    try {
-      const response = await apiClient.get(`/vendas/${id}`)
-      return response.data
-    } catch (error) {
-      console.error(`Erro ao buscar venda ${id}:`, error)
-      throw error
-    }
-  },
-
-  buscarVendasPorCliente: async (cliente: string) => {
-    try {
-      const response = await apiClient.get(`/vendas/cliente/${cliente}`)
-      return response.data
-    } catch (error) {
-      console.error(`Erro ao buscar vendas do cliente ${cliente}:`, error)
-      throw error
-    }
-  },
-
-  buscarVendasPorPeriodo: async (inicio: string, fim: string) => {
-    try {
-      const response = await apiClient.get(`/vendas/periodo?inicio=${inicio}&fim=${fim}`)
-      return response.data
-    } catch (error) {
-      console.error(`Erro ao buscar vendas por período:`, error)
-      throw error
-    }
-  },
-
-  registrarVenda: async (venda: any) => {
-    try {
-      const response = await apiClient.post("/vendas", venda)
-      return response.data
-    } catch (error) {
-      console.error("Erro ao registrar venda:", error)
-      throw error
-    }
-  },
-
-  cancelarVenda: async (id: number) => {
-    try {
-      await apiClient.delete(`/vendas/${id}`)
-    } catch (error) {
-      console.error(`Erro ao cancelar venda ${id}:`, error)
-      throw error
-    }
-  },
-}
-
-export { dashboardService, filaService }
-
-export default apiClient
-
+export default api

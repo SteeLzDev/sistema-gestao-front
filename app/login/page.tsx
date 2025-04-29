@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useToast } from "@/components/ui/use-toast"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
@@ -20,7 +19,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const { login, isAuthenticated, loading } = useAuth()
   const router = useRouter()
-  const { toast } = useToast()
 
   // Redirecionar se já estiver autenticado
   useEffect(() => {
@@ -41,18 +39,30 @@ export default function LoginPage() {
       setError(null)
       setIsLoading(true)
 
+      // Limpar qualquer token existente
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+
       // Adicionar logs para depuração
       console.log("Enviando dados de login:", {
         username,
-        senha, // Usar 'senha' em vez de 'password'
+        senha,
       })
 
       await login({
         username,
-        senha, // Usar 'senha' em vez de 'password'
-        password: senha, // Manter compatibilidade com versões anteriores
+        senha,
       })
 
+      // Verificar se o token foi armazenado
+      const token = localStorage.getItem("token")
+      if (!token) {
+        throw new Error("Falha ao armazenar o token de autenticação")
+      }
+
+      console.log("Login bem-sucedido, token armazenado:", token.substring(0, 10) + "...")
+
+      // Redirecionar para o dashboard
       router.push("/dashboard")
     } catch (error: any) {
       console.error("Erro no login:", error)

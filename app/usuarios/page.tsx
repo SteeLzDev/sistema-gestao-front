@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { BackButton } from "@/components/ui/BackButton"
 
 interface Usuario {
   id: number
@@ -184,15 +185,7 @@ export default function UsuariosPage() {
     <div className="container py-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => router.push("/dashboard")} 
-            className="flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Voltar para Dashboard</span>
-          </Button>
+          <BackButton />
           <h1 className="text-3xl font-bold">Gerenciamento de Usuários</h1>
         </div>
         <Button onClick={handleAddClick}>

@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
 import { Database, Globe, Bell, Shield, Moon, Sun, ArrowLeft } from 'lucide-react'
+import { BackButton } from "@/components/ui/BackButton"
 
 export default function ConfiguracoesPage() {
   const router = useRouter()
@@ -46,15 +47,7 @@ export default function ConfiguracoesPage() {
     <div className="container py-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => router.push("/dashboard")} 
-            className="flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Voltar para Dashboard</span>
-          </Button>
+          <BackButton />
           <h1 className="text-3xl font-bold">Configurações do Sistema</h1>
         </div>
       </div>

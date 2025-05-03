@@ -1,5 +1,15 @@
 import apiClient from "./apiClient"
 
+// Interface para permissões que são objetos
+interface PermissionObject {
+  id?: number | string
+  nome: string
+  descricao?: string
+}
+
+// Tipo união para representar os possíveis formatos de permissão
+type Permission = string | PermissionObject
+
 const authService = {
   login: async (credentials: { username: string; senha: string }) => {
     try {
@@ -77,14 +87,43 @@ const authService = {
     return null
   },
 
-  hasPermission: (permission: string) => {
+  hasPermission: (permission: string): boolean => {
     const user = authService.getCurrentUser()
     if (!user) return false
 
     // Verificar se o usuário é administrador (tem todas as permissões)
-    if (user.perfil === "Administrador") return true
+    if (user.perfil === "Administrador" || user.perfil === "ADMIN" || user.perfil === "ADMINISTRADOR") return true
 
-    // Implementar lógica específica de permissões aqui
+    // Normalizar a permissão solicitada (substituir espaços por underscores)
+    const normalizedPermission = permission.replace(/ /g, "_").toUpperCase()
+
+    // Verificar se o usuário tem a permissão específica
+    if (user.permissoes && Array.isArray(user.permissoes)) {
+      // Verificar permissões como strings
+      if (
+        user.permissoes.some(
+          (perm: Permission) =>
+            typeof perm === "string" && perm.replace(/ /g, "_").toUpperCase() === normalizedPermission,
+        )
+      ) {
+        return true
+      }
+
+      // Verificar permissões como objetos
+      if (
+        user.permissoes.some(
+          (perm: Permission) =>
+            typeof perm === "object" &&
+            perm !== null &&
+            "nome" in perm &&
+            typeof perm.nome === "string" &&
+            perm.nome.replace(/ /g, "_").toUpperCase() === normalizedPermission,
+        )
+      ) {
+        return true
+      }
+    }
+
     return false
   },
 
@@ -95,7 +134,71 @@ const authService = {
       window.location.href = "/login"
     }
   },
+
+  // Nova função para renovar o token
+  refreshToken: async (): Promise<boolean> => {
+    if (typeof window === "undefined") return false
+
+    const token = localStorage.getItem("token")
+    if (!token) {
+      console.warn("Não há token para renovar")
+      return false
+    }
+
+    try {
+      console.log("Tentando renovar token...")
+
+      // Usar axios diretamente para evitar loops com o apiClient
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/sistema-gestao/api"
+
+      const response = await fetch(`${baseUrl}/auth/refresh`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        console.warn(`Falha ao renovar token: ${response.status} ${response.statusText}`)
+        return false
+      }
+
+      const data = await response.json()
+
+      if (data && data.token) {
+        console.log("Token renovado com sucesso")
+
+        // Atualizar token no localStorage
+        localStorage.setItem("token", data.token)
+
+        // Atualizar token no objeto do usuário
+        const userStr = localStorage.getItem("user")
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr)
+            user.token = data.token
+            localStorage.setItem("user", JSON.stringify(user))
+          } catch (e) {
+            console.error("Erro ao atualizar usuário no localStorage:", e)
+          }
+        }
+
+        return true
+      }
+
+      console.warn("Resposta de renovação de token não contém token")
+      return false
+    } catch (error) {
+      console.error("Erro ao renovar token:", error)
+      return false
+    }
+  },
+
+  // Função para obter o token atual
+  getToken: (): string | null => {
+    if (typeof window === "undefined") return null
+    return localStorage.getItem("token")
+  },
 }
 
 export default authService
-

@@ -1,15 +1,21 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/configuracoes/page": "app/configuracoes/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/estoque/adicionar/page": "app/estoque/adicionar/page.js",
+  "/diagnostico-autenticacao/page": "app/diagnostico-autenticacao/page.js",
+  "/diagnostico-usuario/page": "app/diagnostico-usuario/page.js",
   "/estoque/page": "app/estoque/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/fila/adicionar/page": "app/fila/adicionar/page.js",
-  "/fila/page": "app/fila/page.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
   "/relatorios/page": "app/relatorios/page.js",
-  "/vendas/detalhes/page": "app/vendas/detalhes/page.js",
-  "/vendas/page": "app/vendas/page.js",
-  "/vendas/simples/page": "app/vendas/simples/page.js"
+  "/teste-criar-usuario-simples/page": "app/teste-criar-usuario-simples/page.js",
+  "/usuarios/editar/[id]/page": "app/usuarios/editar/[id]/page.js",
+  "/usuarios/novo/page": "app/usuarios/novo/page.js",
+  "/usuarios/page": "app/usuarios/page.js",
+  "/usuarios/perfis/[id]/page": "app/usuarios/perfis/[id]/page.js",
+  "/usuarios/perfis/otimizado/page": "app/usuarios/perfis/otimizado/page.js",
+  "/usuarios/perfis/simplificado/page": "app/usuarios/perfis/simplificado/page.js",
+  "/usuarios/permissoes/[id]/page": "app/usuarios/permissoes/[id]/page.js",
+  "/verificar-autenticacao/page": "app/verificar-autenticacao/page.js"
 }

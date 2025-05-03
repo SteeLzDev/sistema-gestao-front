@@ -4,6 +4,8 @@ import type { ReactNode } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 interface PermissionGuardProps {
   permission?: string
@@ -13,6 +15,7 @@ interface PermissionGuardProps {
   children: ReactNode
   showAlert?: boolean
   alertMessage?: string
+  redirectTo?: string
 }
 
 export function PermissionGuard({
@@ -23,8 +26,13 @@ export function PermissionGuard({
   children,
   showAlert = false,
   alertMessage = "Você não tem permissão para acessar este recurso.",
+  redirectTo,
 }: PermissionGuardProps) {
   const { hasPermission, user } = useAuth()
+  const router = useRouter()
+
+  // Verificar se o usuário é administrador
+  const isAdmin = user?.perfil === "ADMIN" || user?.perfil === "Administrador"
 
   // Verificar se o usuário tem as permissões necessárias
   const hasAccess = () => {
@@ -34,7 +42,7 @@ export function PermissionGuard({
     }
 
     // Se o usuário for ADMIN, permitir acesso a tudo
-    if (user?.perfil === "ADMIN") {
+    if (isAdmin) {
       return true
     }
 
@@ -57,8 +65,20 @@ export function PermissionGuard({
     return false
   }
 
+  // Redirecionar se não tiver acesso e redirectTo estiver definido
+  useEffect(() => {
+    if (!hasAccess() && redirectTo) {
+      router.push(redirectTo)
+    }
+  }, [redirectTo, router])
+
   // Se o usuário não tiver acesso
   if (!hasAccess()) {
+    // Se redirectTo estiver definido, não renderizar nada (o redirecionamento acontecerá no useEffect)
+    if (redirectTo) {
+      return null
+    }
+
     // Se showAlert for true, mostrar um alerta
     if (showAlert) {
       return (

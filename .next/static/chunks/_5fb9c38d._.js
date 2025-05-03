@@ -175,15 +175,22 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/contexts/AuthContext.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/components/ui/alert.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/circle-alert.js [app-client] (ecmascript) <export default as AlertCircle>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
 ;
 ;
 ;
-function PermissionGuard({ permission, permissions = [], requireAll = false, fallback = null, children, showAlert = false, alertMessage = "Você não tem permissão para acessar este recurso." }) {
+;
+;
+function PermissionGuard({ permission, permissions = [], requireAll = false, fallback = null, children, showAlert = false, alertMessage = "Você não tem permissão para acessar este recurso.", redirectTo }) {
     _s();
     const { hasPermission, user } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"])();
+    const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
+    // Verificar se o usuário é administrador
+    const isAdmin = user?.perfil === "ADMIN" || user?.perfil === "Administrador";
     // Verificar se o usuário tem as permissões necessárias
     const hasAccess = ()=>{
         // Se não houver permissões especificadas, permitir acesso
@@ -191,7 +198,7 @@ function PermissionGuard({ permission, permissions = [], requireAll = false, fal
             return true;
         }
         // Se o usuário for ADMIN, permitir acesso a tudo
-        if (user?.perfil === "ADMIN") {
+        if (isAdmin) {
             return true;
         }
         // Verificar permissão única
@@ -210,8 +217,23 @@ function PermissionGuard({ permission, permissions = [], requireAll = false, fal
         }
         return false;
     };
+    // Redirecionar se não tiver acesso e redirectTo estiver definido
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "PermissionGuard.useEffect": ()=>{
+            if (!hasAccess() && redirectTo) {
+                router.push(redirectTo);
+            }
+        }
+    }["PermissionGuard.useEffect"], [
+        redirectTo,
+        router
+    ]);
     // Se o usuário não tiver acesso
     if (!hasAccess()) {
+        // Se redirectTo estiver definido, não renderizar nada (o redirecionamento acontecerá no useEffect)
+        if (redirectTo) {
+            return null;
+        }
         // Se showAlert for true, mostrar um alerta
         if (showAlert) {
             return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Alert"], {
@@ -222,20 +244,20 @@ function PermissionGuard({ permission, permissions = [], requireAll = false, fal
                         className: "h-4 w-4"
                     }, void 0, false, {
                         fileName: "[project]/components/auth/PermissionGuard.tsx",
-                        lineNumber: 66,
+                        lineNumber: 86,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$alert$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AlertDescription"], {
                         children: alertMessage
                     }, void 0, false, {
                         fileName: "[project]/components/auth/PermissionGuard.tsx",
-                        lineNumber: 67,
+                        lineNumber: 87,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/components/auth/PermissionGuard.tsx",
-                lineNumber: 65,
+                lineNumber: 85,
                 columnNumber: 9
             }, this);
         }
@@ -249,9 +271,10 @@ function PermissionGuard({ permission, permissions = [], requireAll = false, fal
         children: children
     }, void 0, false);
 }
-_s(PermissionGuard, "36ch/E/HnTHgHhKW8uP2BiDISWo=", false, function() {
+_s(PermissionGuard, "IZVIgWsBxKWgWvC9RW4MN6R+59c=", false, function() {
     return [
-        __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"]
+        __TURBOPACK__imported__module__$5b$project$5d2f$contexts$2f$AuthContext$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useAuth"],
+        __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];
 });
 _c = PermissionGuard;

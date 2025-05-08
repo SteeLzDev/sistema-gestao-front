@@ -6,6 +6,7 @@
   "/diagnostico-usuario/page": "app/diagnostico-usuario/page.js",
   "/estoque/page": "app/estoque/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/fila/page": "app/fila/page.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
   "/relatorios/page": "app/relatorios/page.js",
@@ -17,5 +18,6 @@
   "/usuarios/perfis/otimizado/page": "app/usuarios/perfis/otimizado/page.js",
   "/usuarios/perfis/simplificado/page": "app/usuarios/perfis/simplificado/page.js",
   "/usuarios/permissoes/[id]/page": "app/usuarios/permissoes/[id]/page.js",
+  "/vendas/page": "app/vendas/page.js",
   "/verificar-autenticacao/page": "app/verificar-autenticacao/page.js"
 }

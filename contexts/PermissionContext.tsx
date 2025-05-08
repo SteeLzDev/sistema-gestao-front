@@ -4,8 +4,11 @@ import type React from "react"
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
 import { useAuth } from "./AuthContext"
-import { Permission } from "../types/permissions" 
+import { Permission } from "../types/permissions"
 
+import { useToast } from "@/components/ui/use-toast"
+import apiClient from "@/services/apiClient"
+import cacheService from "@/services/cacheServices"
 
 // Mapeamento entre permissões do frontend e backend
 const permissionMapping: Record<string, string> = {
@@ -33,7 +36,7 @@ const permissionMapping: Record<string, string> = {
   [Permission.CREATE_USER]: "USUARIOS_CRIAR",
   [Permission.EDIT_USER]: "USUARIOS_EDITAR",
   [Permission.DELETE_USER]: "USUARIOS_REMOVER",
-  [Permission.MANAGE_PERMISSIONS]: "USUARIOS_GERENCIAR_PERMISSOES",
+  [Permission.MANAGE_PERMISSIONS]: "USUARIOS_PERMISSOES",
 
   // Configurações
   [Permission.VIEW_SETTINGS]: "CONFIGURACOES_VISUALIZAR",
@@ -49,6 +52,9 @@ const reversePermissionMapping: Record<string, Permission> = Object.entries(perm
   {} as Record<string, Permission>,
 )
 
+const PERMISSION_CACHE_PREFIX = "permission_"
+const USER_PERMISSIONS_CACHE_KEY = "user_permissions"
+
 interface PermissionContextProps {
   permissions: Permission[]
   backendPermissions: string[]
@@ -57,6 +63,7 @@ interface PermissionContextProps {
   hasAnyPermission: (permissionNames: string[]) => boolean
   hasAllPermissions: (permissionNames: string[]) => boolean
   refreshPermissions: () => Promise<void>
+  clearPermissionCache: () => void
 }
 
 const PermissionContext = createContext<PermissionContextProps>({
@@ -67,46 +74,23 @@ const PermissionContext = createContext<PermissionContextProps>({
   hasAnyPermission: () => false,
   hasAllPermissions: () => false,
   refreshPermissions: async () => {},
+  clearPermissionCache: () => {},
 })
 
 interface PermissionProviderProps {
   children: React.ReactNode
 }
 
-// Adicionar expiração de cache para permissões
-const PERMISSIONS_CACHE_EXPIRY = 30 * 60 * 1000 // 30 minutos em milissegundos
-
-// Função para armazenar permissões com expiração
-const storePermissionsWithExpiry = (userId: number, permissions: string[]) => {
-  const item = {
-    value: permissions,
-    expiry: new Date().getTime() + PERMISSIONS_CACHE_EXPIRY,
-  }
-  localStorage.setItem(`user_permissions_${userId}`, JSON.stringify(item))
-}
-
-// Função para obter permissões com verificação de expiração
-const getPermissionsWithExpiry = (userId: number): string[] | null => {
-  const itemStr = localStorage.getItem(`user_permissions_${userId}`)
-  if (!itemStr) return null
-
-  const item = JSON.parse(itemStr)
-  const now = new Date().getTime()
-
-  // Verificar se o item expirou
-  if (now > item.expiry) {
-    localStorage.removeItem(`user_permissions_${userId}`)
-    return null
-  }
-
-  return item.value
-}
+// Constantes para cache
+const PERMISSIONS_CACHE_KEY_PREFIX = "user_permissions_"
+const PERMISSIONS_CACHE_EXPIRY = 30 // 30 minutos
 
 export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children }) => {
   const [backendPermissions, setBackendPermissions] = useState<string[]>([])
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const { isAuthenticated, user, loading: authLoading } = useAuth()
+  const { toast } = useToast()
 
   // Converter permissões do backend para o frontend
   const convertToFrontendPermissions = (backendPerms: string[]): Permission[] => {
@@ -143,6 +127,43 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     [hasPermission],
   )
 
+  // Limpar o cache de permissões
+  const clearPermissionCache = useCallback(() => {
+    if (user?.id) {
+      const cacheKey = `${PERMISSIONS_CACHE_KEY_PREFIX}${user.id}`
+      cacheService.remove(cacheKey)
+      console.log("Cache de permissões limpo")
+    } else {
+      cacheService.clear(PERMISSIONS_CACHE_KEY_PREFIX)
+      console.log("Todo o cache de permissões foi limpo")
+    }
+  }, [user?.id])
+
+  // Função para buscar permissões do servidor
+  const fetchPermissionsFromServer = async (userId: number): Promise<string[]> => {
+    try {
+      console.log(`Buscando permissões do usuário ${userId} do servidor...`)
+
+      // Tentar obter permissões do usuário específico
+      const response = await apiClient.get(`/permissoes/usuario/${userId}/todas`)
+      const permissoes = response.data
+
+      console.log(`Permissões obtidas do servidor:`, permissoes)
+
+      // Armazenar no cache
+      if (permissoes && Array.isArray(permissoes)) {
+        const cacheKey = `${PERMISSIONS_CACHE_KEY_PREFIX}${userId}`
+        cacheService.set(cacheKey, permissoes, PERMISSIONS_CACHE_EXPIRY)
+        console.log(`Permissões armazenadas no cache com chave ${cacheKey}`)
+      }
+
+      return permissoes || []
+    } catch (error) {
+      console.error("Erro ao buscar permissões do servidor:", error)
+      throw error
+    }
+  }
+
   // Função para atualizar as permissões
   const refreshPermissions = async () => {
     if (!isAuthenticated || !user) {
@@ -154,19 +175,22 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
 
     try {
       setLoading(true)
+      console.log("Atualizando permissões para o usuário:", user.id)
 
-      // Simular chamada API para obter permissões
-      // Em um ambiente real, você faria uma chamada à API
-      const mockPermissions = user.permissoes || []
-
-      // Armazenar as permissões no cache com expiração
-      storePermissionsWithExpiry(user.id, mockPermissions)
+      // Tentar buscar permissões do servidor
+      const permissoes = await fetchPermissionsFromServer(user.id)
 
       // Atualizar os estados
-      setBackendPermissions(mockPermissions)
-      setPermissions(convertToFrontendPermissions(mockPermissions))
+      setBackendPermissions(permissoes)
+      setPermissions(convertToFrontendPermissions(permissoes))
 
-      console.log("Permissões atualizadas:", mockPermissions)
+      console.log("Permissões atualizadas:", permissoes)
+
+      // Mostrar toast de sucesso
+      toast({
+        title: "Permissões atualizadas",
+        description: "Suas permissões foram atualizadas com sucesso.",
+      })
     } catch (error) {
       console.error("Erro ao atualizar permissões:", error)
 
@@ -174,11 +198,86 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
       if (user.permissoes && Array.isArray(user.permissoes)) {
         setBackendPermissions(user.permissoes)
         setPermissions(convertToFrontendPermissions(user.permissoes))
+
+        // Mostrar toast de aviso
+        toast({
+          title: "Aviso",
+          description: "Usando permissões em cache. Algumas funcionalidades podem estar limitadas.",
+          variant: "default",
+        })
+      } else {
+        // Mostrar toast de erro
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar suas permissões. Tente novamente mais tarde.",
+          variant: "destructive",
+        })
       }
     } finally {
       setLoading(false)
     }
   }
+
+  const fetchUserPermissions = useCallback(async () => {
+    if (!user) return
+
+    setLoading(true)
+
+    try {
+      // Verificar se as permissões estão em cache
+      const cachedPermissions = cacheService.get<string[]>(USER_PERMISSIONS_CACHE_KEY)
+
+      if (cachedPermissions) {
+        console.log("Usando permissões em cache")
+        setBackendPermissions(cachedPermissions)
+        setPermissions(convertToFrontendPermissions(cachedPermissions))
+        setLoading(false)
+        return
+      }
+
+      // Se não estiver em cache, buscar do servidor
+      const permissoes = await fetchPermissionsFromServer(user.id)
+
+      setBackendPermissions(permissoes)
+      setPermissions(convertToFrontendPermissions(permissoes))
+
+      // Salvar no cache por 30 minutos
+      cacheService.set(USER_PERMISSIONS_CACHE_KEY, permissoes, 30)
+    } catch (error) {
+      console.error("Erro ao buscar permissões:", error)
+      setPermissions([])
+    } finally {
+      setLoading(false)
+    }
+  }, [user, isAuthenticated, authLoading])
+
+  const clearPermissionsCache = useCallback(() => {
+    cacheService.remove(USER_PERMISSIONS_CACHE_KEY)
+    cacheService.clear(PERMISSION_CACHE_PREFIX)
+  }, [])
+
+  const checkPermission = useCallback(
+    async (requiredPermission: string): Promise<boolean> => {
+      if (!user) return false
+
+      // Verificar se o resultado está em cache
+      const cacheKey = `${PERMISSION_CACHE_PREFIX}${requiredPermission}`
+      const cachedResult = cacheService.get<boolean>(cacheKey)
+
+      if (cachedResult !== null) {
+        return cachedResult
+      }
+
+      // Se não estiver em cache, verificar nas permissões carregadas
+      const hasPermission = backendPermissions.includes(requiredPermission)
+
+      // Salvar resultado no cache por 30 minutos
+      cacheService.set(cacheKey, hasPermission, 30)
+
+      return hasPermission
+    },
+    [user, backendPermissions],
+  )
 
   // Carregar permissões quando o usuário estiver autenticado
   useEffect(() => {
@@ -192,9 +291,11 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
 
       try {
         // Tentar carregar permissões do cache primeiro
-        const cachedPermissions = getPermissionsWithExpiry(user.id)
+        const cacheKey = `${PERMISSIONS_CACHE_KEY_PREFIX}${user.id}`
+        const cachedPermissions = cacheService.get<string[]>(cacheKey)
 
-        if (cachedPermissions) {
+        if (cachedPermissions && cachedPermissions.length > 0) {
+          console.log("Usando permissões do cache:", cachedPermissions)
           setBackendPermissions(cachedPermissions)
           setPermissions(convertToFrontendPermissions(cachedPermissions))
           setLoading(false)
@@ -221,6 +322,16 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
     }
   }, [user, isAuthenticated, authLoading])
 
+  useEffect(() => {
+    if (!user) {
+      setBackendPermissions([])
+      setPermissions([])
+      // Corrigido: usar clear com prefixo em vez de clearWithPrefix
+      cacheService.remove(USER_PERMISSIONS_CACHE_KEY)
+      cacheService.clear(PERMISSION_CACHE_PREFIX)
+    }
+  }, [user])
+
   return (
     <PermissionContext.Provider
       value={{
@@ -231,6 +342,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         hasAnyPermission,
         hasAllPermissions,
         refreshPermissions,
+        clearPermissionCache,
       }}
     >
       {children}

@@ -7,11 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { BackButton } from "@/components/ui/BackButton"
 import { useToast } from "@/components/ui/use-toast"
-import { Loader2, AlertCircle, RefreshCw, CheckCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { RefreshCw } from "lucide-react"
 import apiClient from "@/services/apiClient"
 import { useAuth } from "@/contexts/AuthContext"
 import permissionService from "@/services/permissionService"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
+
+
+import { usePermission } from "@/contexts/PermissionContext"
+import errorService from "@/services/erroService"
+import { FeedbackMessage } from "@/components/ui/feedback-message"
+
 
 interface Usuario {
   id: number
@@ -27,6 +33,7 @@ export default function GerenciarPerfilUsuarioOtimizado() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const { refreshAuth } = useAuth()
+  const { refreshPermissions, clearPermissionCache } = usePermission()
 
   const userId = searchParams.get("id") ? Number.parseInt(searchParams.get("id") as string, 10) : 0
 
@@ -36,6 +43,10 @@ export default function GerenciarPerfilUsuarioOtimizado() {
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [sucesso, setSucesso] = useState<string | null>(null)
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error" | "info" | "warning"
+    message: string
+  } | null>(null)
 
   // Função para carregar dados do usuário automaticamente ao montar o componente
   useEffect(() => {
@@ -77,22 +88,8 @@ export default function GerenciarPerfilUsuarioOtimizado() {
         description: "Dados do usuário carregados com sucesso.",
       })
     } catch (error: any) {
-      console.error("Erro ao carregar usuário:", error)
-
-      // Verificar se é um erro de autenticação
-      if (error.response && error.response.status === 401) {
-        setErro("Sua sessão expirou. Por favor, faça login novamente.")
-        setTimeout(() => router.push("/login"), 2000)
-        return
-      }
-
-      setErro(`Não foi possível carregar os dados do usuário. ${error.message || ""}`)
-
-      toast({
-        title: "Erro",
-        description: `Falha ao carregar dados. ${error.message || ""}`,
-        variant: "destructive",
-      })
+      const standardError = errorService.handleError(error, "Erro ao carregar usuário")
+      setErro(standardError.details || "Erro ao carregar dados do usuário")
     } finally {
       setCarregando(false)
     }
@@ -128,6 +125,18 @@ export default function GerenciarPerfilUsuarioOtimizado() {
       // Usar o serviço específico para atribuir perfil
       await permissionService.atribuirPerfilUsuario(usuario.id, perfilSelecionado)
 
+      // Limpar o cache de permissões para forçar uma atualização na próxima vez
+      clearPermissionCache()
+
+      // Se o usuário estiver atualizando seu próprio perfil, atualizar as permissões
+      const userStr = localStorage.getItem("user")
+      if (userStr) {
+        const currentUser = JSON.parse(userStr)
+        if (currentUser.id === usuario.id) {
+          await refreshPermissions()
+        }
+      }
+
       setSucesso(`Perfil ${perfilSelecionado} atribuído com sucesso ao usuário ${usuario.nome}.`)
 
       toast({
@@ -143,22 +152,36 @@ export default function GerenciarPerfilUsuarioOtimizado() {
         router.push("/usuarios")
       }, 2000)
     } catch (error: any) {
-      console.error("Erro ao salvar perfil:", error)
-      console.error("Detalhes da resposta:", error.response?.data)
+      const standardError = errorService.handleError(error, "Erro ao salvar perfil")
+      setErro(standardError.details || "Erro ao salvar o perfil do usuário")
+    } finally {
+      setSalvando(false)
+    }
+  }
 
-      // Verificar se é um erro de autenticação
-      if (error.response && error.response.status === 401) {
-        setErro("Sua sessão expirou. Por favor, faça login novamente.")
-        setTimeout(() => router.push("/login"), 2000)
-        return
-      }
+  const handleAssignProfile = async (profileId: string) => {
+    try {
+      setFeedback(null)
+      setSalvando(true)
 
-      setErro(`Não foi possível salvar o perfil do usuário. ${error.message || ""}`)
+      // Usar o método correto do permissionService
+      await permissionService.atribuirPerfilUsuario(userId, profileId)
 
-      toast({
-        title: "Erro",
-        description: `Não foi possível salvar o perfil do usuário. ${error.message || ""}`,
-        variant: "destructive",
+      // Limpar o cache de permissões após atribuir um novo perfil
+      clearPermissionCache()
+
+      setFeedback({
+        type: "success",
+        message: "Perfil atribuído com sucesso!",
+      })
+
+      // Recarregar os dados do usuário
+      await carregarUsuario()
+    } catch (error) {
+      const standardError = errorService.handleError(error, "Erro ao atribuir perfil")
+      setFeedback({
+        type: "error",
+        message: standardError.details || "Erro ao atribuir perfil ao usuário",
       })
     } finally {
       setSalvando(false)
@@ -172,19 +195,10 @@ export default function GerenciarPerfilUsuarioOtimizado() {
         <h1 className="text-2xl font-bold ml-4">Gerenciar Perfil do Usuário</h1>
       </div>
 
-      {erro && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{erro}</AlertDescription>
-        </Alert>
-      )}
+      {feedback && <FeedbackMessage type={feedback.type} message={feedback.message} className="mb-4" />}
 
-      {sucesso && (
-        <Alert variant="default" className="mb-4 bg-green-50 border-green-200">
-          <CheckCircle className="h-4 w-4 text-green-500" />
-          <AlertDescription className="text-green-700">{sucesso}</AlertDescription>
-        </Alert>
-      )}
+      {erro && <FeedbackMessage type="error" message={erro} className="mb-4" />}
+      {sucesso && <FeedbackMessage type="success" message={sucesso} className="mb-4" />}
 
       {!usuario && !carregando && (
         <Card className="mb-4">
@@ -198,8 +212,8 @@ export default function GerenciarPerfilUsuarioOtimizado() {
             <Button onClick={carregarUsuario} disabled={carregando} className="w-full md:w-auto">
               {carregando ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Carregando...
+                  <LoadingSpinner size="sm" />
+                  <span className="ml-2">Carregando...</span>
                 </>
               ) : (
                 <>
@@ -247,8 +261,8 @@ export default function GerenciarPerfilUsuarioOtimizado() {
 
               <div className="flex gap-2 pt-4">
                 <Button onClick={handleSalvarPerfil} disabled={salvando || perfilSelecionado === usuario.perfil}>
-                  {salvando ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {salvando ? "Salvando..." : "Salvar Perfil"}
+                  {salvando ? <LoadingSpinner size="sm" /> : null}
+                  <span className="ml-2">{salvando ? "Salvando..." : "Salvar Perfil"}</span>
                 </Button>
                 <Button variant="outline" onClick={() => router.push("/usuarios")}>
                   Voltar para Lista
@@ -261,8 +275,7 @@ export default function GerenciarPerfilUsuarioOtimizado() {
 
       {carregando && (
         <div className="flex justify-center items-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Carregando dados do usuário...</span>
+          <LoadingSpinner size="lg" text="Carregando dados do usuário..." />
         </div>
       )}
     </div>

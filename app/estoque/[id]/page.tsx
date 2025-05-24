@@ -20,6 +20,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
 export default function ProdutoDetalhesPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { toast } = useToast()
@@ -37,7 +42,7 @@ export default function ProdutoDetalhesPage({ params }: { params: { id: string }
     try {
       setLoading(true)
       setError(null)
-      const data = await produtoService.buscarProduto(Number.parseInt(params.id))
+      const data = await produtoService.obterProduto(Number.parseInt(params.id))
       setProduto(data)
     } catch (error) {
       console.error("Erro ao carregar produto:", error)
@@ -59,7 +64,7 @@ export default function ProdutoDetalhesPage({ params }: { params: { id: string }
 
   const handleDeleteConfirm = async () => {
     try {
-      await produtoService.removerProduto(produto.id)
+      await produtoService.excluirProduto(produto.id)
       toast({
         title: "Sucesso",
         description: "Produto removido com sucesso.",

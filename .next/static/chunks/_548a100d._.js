@@ -253,7 +253,9 @@ const alertVariants = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_m
     variants: {
         variant: {
             default: "bg-background text-foreground",
-            destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive"
+            destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
+            success: "border-green-500/50 text-green-700 dark:border-green-500 [&>svg]:text-green-700",
+            warning: "border-yellow-500/50 text-yellow-700 dark:border-yellow-500 [&>svg]:text-yellow-700"
         }
     },
     defaultVariants: {
@@ -269,7 +271,7 @@ const Alert = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$
         ...props
     }, void 0, false, {
         fileName: "[project]/components/ui/alert.tsx",
-        lineNumber: 26,
+        lineNumber: 28,
         columnNumber: 3
     }, this));
 _c1 = Alert;
@@ -280,7 +282,7 @@ const AlertTitle = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$
         ...props
     }, void 0, false, {
         fileName: "[project]/components/ui/alert.tsx",
-        lineNumber: 32,
+        lineNumber: 34,
         columnNumber: 5
     }, this));
 _c3 = AlertTitle;
@@ -291,7 +293,7 @@ const AlertDescription = /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$pr
         ...props
     }, void 0, false, {
         fileName: "[project]/components/ui/alert.tsx",
-        lineNumber: 39,
+        lineNumber: 41,
         columnNumber: 5
     }, this));
 _c5 = AlertDescription;

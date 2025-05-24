@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import React from "react";
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,7 +26,9 @@ interface PageProps {
     id: string;
   };
 }
-export default function ProdutoDetalhesPage({ params }: PageProps) {
+
+const ProdutoDetalhesPage = ({ params }: PageProps) {
+  const { id } = params;
   const router = useRouter()
   const { toast } = useToast()
   const [produto, setProduto] = useState<any>(null)

@@ -25,7 +25,7 @@ interface PageProps {
     id: string;
   };
 }
-export default function ProdutoDetalhesPage({ params }: { params: { id: string } }) {
+export default function ProdutoDetalhesPage({ params }: PageProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [produto, setProduto] = useState<any>(null)

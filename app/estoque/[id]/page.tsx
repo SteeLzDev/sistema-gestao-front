@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
 import React from "react";
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -21,14 +22,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
 
-const ProdutoDetalhesPage = ({ params }: PageProps) {
-  const { id } = params;
+
+export default function ProdutoDetalhesPage() {
+  const params = useParams()
+  const id = params?.id as string
   const router = useRouter()
   const { toast } = useToast()
   const [produto, setProduto] = useState<any>(null)
@@ -38,14 +36,16 @@ const ProdutoDetalhesPage = ({ params }: PageProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
+    if(id) {
     carregarProduto()
-  }, [params.id])
+    }
+  }, [id])
 
   const carregarProduto = async () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await produtoService.obterProduto(Number.parseInt(params.id))
+      const data = await produtoService.obterProduto(Number(id))
       setProduto(data)
     } catch (error) {
       console.error("Erro ao carregar produto:", error)

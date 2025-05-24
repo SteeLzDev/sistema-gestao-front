@@ -72,7 +72,13 @@ export default function AdicionarClientePage() {
     setError(null)
 
     try {
-      await filaService.adicionarClienteNaFila(cliente)
+      await filaService.adicionarClienteNaFila({
+        nome: cliente.nome.trim(),
+        telefone: cliente.telefone.trim(),
+        servico: cliente.servico.trim(),
+        prioridade: cliente.prioridade === "alta" ? "alta" : "normal",
+        status: "AGUARDANDO",
+      })
 
       toast({
         title: "Cliente adicionado",

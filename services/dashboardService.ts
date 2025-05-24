@@ -1,7 +1,5 @@
 import apiClient from "./apiClient";
-import { produtoService } from "./api";
-import { vendaService } from "./api";
-import { filaService } from "./api";
+import  produtoService  from "./api";
 
 export interface DashboardData {
   totalSales: number;

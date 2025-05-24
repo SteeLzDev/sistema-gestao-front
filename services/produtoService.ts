@@ -28,7 +28,7 @@ const produtosExemplo = [
   },
 ]
 
-export const produtoService = {
+  const produtoService = {
   async listarProdutos() {
     try {
       // Verificar se há token antes de fazer a requisição

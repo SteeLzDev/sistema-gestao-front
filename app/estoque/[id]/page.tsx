@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/alert-dialog"
 
 
-
 export default function ProdutoDetalhesPage() {
   const params = useParams()
   const id = params?.id as string

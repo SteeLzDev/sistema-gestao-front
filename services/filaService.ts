@@ -7,7 +7,7 @@ export interface Cliente {
   nome: string
   servico: string
   chegada: string
-  prioridade: string
+  prioridade: "normal" | "alta"
   espera?: string
 }
 
@@ -77,6 +77,7 @@ export const filaService = {
           method: "get",
           url: "/fila/clientes",
         })
+        
 
         // Atualizar o cache
         clientesCache = clientes

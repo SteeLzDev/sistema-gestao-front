@@ -1,23 +1,6 @@
-
+import type { Cliente, Atendimento } from "@/types/fila"
 import apiClient from "@/services/apiClient"
 
-// Tipos
-export interface Cliente {
-  id: number
-  nome: string
-  servico: string
-  chegada: string
-  prioridade: "normal" | "alta"
-  espera?: string
-}
-
-export interface Atendimento {
-  id: number
-  nome: string
-  servico: string
-  inicio: string
-  atendente: string
-}
 
 // Função para fazer requisições com o token exato
 const fazerRequisicaoComToken = async (config: {
@@ -246,6 +229,7 @@ export const filaService = {
             servico: clienteAtualizado.servico,
             inicio: new Date().toISOString(),
             atendente: atendente,
+            status: ""
           }
 
           // Remover do cache de clientes
@@ -266,6 +250,7 @@ export const filaService = {
           servico: cliente.servico,
           inicio: new Date().toISOString(),
           atendente: atendente,
+          status: ""
         }
 
         // Remover o cliente da fila via API e do cache local

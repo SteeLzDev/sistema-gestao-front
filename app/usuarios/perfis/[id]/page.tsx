@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import usuarioService, { type Usuario } from "@/services/usuarioService"
 import permissionService from "@/services/permissionService"
 import { useAuth } from "@/contexts/AuthContext"
+import { useParams } from "next/navigation"
 
 interface PageProps {
   params: {
@@ -19,13 +20,14 @@ interface PageProps {
   }
 }
 
-export default function GerenciarPerfilUsuario({ params }: PageProps) {
+export default function GerenciarPerfilUsuario() {
+  const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
   const { refreshAuth, isAuthenticated } = useAuth()
 
   // Acessar o ID diretamente, mas com verificação
-  const userId = params?.id ? Number.parseInt(params.id, 10) : 0
+  const userId = params?.id ? Number.parseInt(params.id as string, 10) : 0
 
   const [usuario, setUsuario] = useState<Usuario | null>(null)
   const [carregando, setCarregando] = useState(true)

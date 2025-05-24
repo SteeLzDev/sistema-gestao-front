@@ -73,10 +73,15 @@ export const filaService = {
     try {
       // Tentar primeiro com o endpoint /fila/clientes
       try {
-        const clientes = await fazerRequisicaoComToken({
+        const clientesRaw = await fazerRequisicaoComToken({
           method: "get",
           url: "/fila/clientes",
         })
+
+        const clientes: Cliente[] = (Array.isArray(clientesRaw) ? clientesRaw : []).map((c: any) => ({
+          ...c,
+          prioridade: c.prioridade === "alta" ? "alta" : "normal",
+        }))
         
 
         // Atualizar o cache
@@ -87,10 +92,15 @@ export const filaService = {
         console.error("Erro ao acessar /fila/clientes, tentando alternativa:", error)
 
         // Se falhar, tentar com /fila
-        const clientes = await fazerRequisicaoComToken({
+        const clientesRaw = await fazerRequisicaoComToken({
           method: "get",
           url: "/fila",
         })
+
+        const clientes: Cliente[] = (Array.isArray(clientesRaw) ? clientesRaw : []).map((c: any) => ({
+          ...c,
+          prioridade: c.prioridade === "alta" ? "alta" : "normal",
+        }))
 
         // Atualizar o cache
         clientesCache = clientes

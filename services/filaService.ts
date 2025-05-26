@@ -63,7 +63,7 @@ export const filaService = {
 
         const clientes: Cliente[] = (Array.isArray(clientesRaw) ? clientesRaw : []).map((c: any) => ({
           ...c,
-          prioridade: c.prioridade === "alta" ? "alta" : "normal",
+          prioridade: String(c.prioridade).toLowerCase() === "alta" ? "alta" : "normal",
         }))
         
 
@@ -82,7 +82,7 @@ export const filaService = {
 
         const clientes: Cliente[] = (Array.isArray(clientesRaw) ? clientesRaw : []).map((c: any) => ({
           ...c,
-          prioridade: c.prioridade === "alta" ? "alta" : "normal",
+          prioridade: String(c.prioridade).toLowerCase() === "alta" ? "alta" : "normal",
         }))
 
         // Atualizar o cache

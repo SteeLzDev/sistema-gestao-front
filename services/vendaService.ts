@@ -1,5 +1,6 @@
 import apiClient from "@/services/apiClient"
 import type { VendaDTO, ItemVendaDTO } from "@/types/venda"
+import produtoService from "./produtoService"
 
 // Dados de exemplo para usar como fallback quando a API falhar
 const vendasExemplo = [
@@ -96,13 +97,20 @@ export const vendaService = {
       const token = localStorage.getItem("token")
       console.log("Token usado na requisição:", token ? token.substring(0, 10) + "..." : "Não encontrado")
 
+      // Registrar a venda no backend
+      // O backend já reduz o estoque automaticamente, então não precisamos fazer isso manualmente
       const response = await apiClient.post("/vendas", vendaDTO)
+      console.log("✅ Venda registrada com sucesso! O estoque foi atualizado automaticamente pelo backend.")
+
       return response.data
     } catch (error: any) {
       console.error("Erro ao registrar venda:", error)
       throw error
     }
   },
+
+  // Método removido: atualizarEstoqueAposVenda
+  // O backend já reduz o estoque automaticamente quando cria a venda
 
   async listarVendas() {
     try {
@@ -246,6 +254,48 @@ export const vendaService = {
     } catch (error) {
       console.error(`Erro ao cancelar venda ${id}:`, error)
       throw error
+    }
+  },
+
+  // MÉTODO ADICIONAL: Verificar disponibilidade de estoque antes da venda
+  async verificarDisponibilidadeEstoque(itens: any[]): Promise<{ disponivel: boolean; erros: string[] }> {
+    const erros: string[] = []
+
+    try {
+      for (const item of itens) {
+        const produtoId = item.produtoId || item.produto?.id
+        const quantidade = item.quantidade
+
+        if (!produtoId) {
+          erros.push("Produto não identificado")
+          continue
+        }
+
+        // Buscar o produto atual para verificar estoque
+        const produto = await produtoService.obterProduto(produtoId)
+
+        if (!produto) {
+          erros.push(`Produto ${produtoId} não encontrado`)
+          continue
+        }
+
+        if (produto.quantidade < quantidade) {
+          erros.push(
+            `Estoque insuficiente para ${produto.nome}. Disponível: ${produto.quantidade}, Solicitado: ${quantidade}`,
+          )
+        }
+      }
+
+      return {
+        disponivel: erros.length === 0,
+        erros,
+      }
+    } catch (error) {
+      console.error("Erro ao verificar disponibilidade de estoque:", error)
+      return {
+        disponivel: false,
+        erros: ["Erro ao verificar disponibilidade de estoque"],
+      }
     }
   },
 }

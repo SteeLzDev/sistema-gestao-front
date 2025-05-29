@@ -1,5 +1,6 @@
 import axios from "axios"
 import toastService from "./toastService"
+import { url } from "inspector"
 
 // Criar uma instância do axios com configurações padrão
 const apiClient = axios.create({
@@ -109,6 +110,9 @@ apiClient.interceptors.request.use(
 // Interceptor de resposta para tratar erros de autenticação
 apiClient.interceptors.response.use(
   (response) => {
+    console.log(
+      `Resposta recebida: ${response.config.method?.toLocaleUpperCase()} ${response.config.url} - Status: ${response.status}`,
+    )
     return response
   },
   async (error) => {
@@ -199,6 +203,21 @@ apiClient.interceptors.response.use(
     if (error.code === "ECONNABORTED" || !error.response) {
       toastService.error("Erro de conexão", "Não foi possível conectar ao servidor. Verifique sua conexão.")
     }
+
+    //Log detalhado do erro para depuração
+    console.error("Erro na requisição API:", {
+      url: error.config.url,
+      method: error.config?.method,
+      status: error.response?.data,
+      message: error.message,
+    })
+
+    console.error("Detalhes completos do erro:", {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.data,
+      message: error.message,
+    })
 
     return Promise.reject(error)
   },

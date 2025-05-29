@@ -1,14 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
-import React from "react";
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import produtoService from "@/services/produtoService"
 import { useToast } from "@/components/ui/use-toast"
-import { ArrowLeft, Edit, Trash, Package, AlertCircle } from "lucide-react"
+import { ArrowLeft, Edit, Trash, Package, AlertCircle, Plus, Minus } from "lucide-react"
 import { ProdutoForm } from "@/components/produto/ProdutoForm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import {
@@ -21,7 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function ProdutoDetalhesPage() {
   const params = useParams()
@@ -33,20 +32,43 @@ export default function ProdutoDetalhesPage() {
   const [error, setError] = useState<string | null>(null)
   const [formDialogOpen, setFormDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [estoqueDialogOpen, setEstoqueDialogOpen] = useState(false)
+  const [quantidadeEstoque, setQuantidadeEstoque] = useState(0)
+  const [tipoOperacao, setTipoOperacao] = useState<"adicionar" | "remover">("adicionar")
 
   useEffect(() => {
-    if(id) {
-    carregarProduto()
+    // Verificar se há token de autenticação
+    const token = localStorage.getItem("token")
+    if (!token) {
+      console.error("Token não encontrado - redirecionando para login")
+      router.push("/login")
+      return
     }
-  }, [id])
+
+    if (id) {
+      carregarProduto()
+    }
+  }, [id, router])
 
   const carregarProduto = async () => {
     try {
       setLoading(true)
       setError(null)
+
+      if (!id) {
+        throw new Error("ID do produto não fornecido")
+      }
+
+      console.log(`Carregando produto com ID: ${id}`)
       const data = await produtoService.obterProduto(Number(id))
+      console.log("Produto carregado:", data)
+
+      if (!data) {
+        throw new Error("Produto não encontrado")
+      }
+
       setProduto(data)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao carregar produto:", error)
       setError("Não foi possível carregar os detalhes do produto.")
       toast({
@@ -66,22 +88,96 @@ export default function ProdutoDetalhesPage() {
 
   const handleDeleteConfirm = async () => {
     try {
-      await produtoService.excluirProduto(produto.id)
+      console.log(`Iniciando exclusão do produto ${produto.id}`)
+
+      if (!produto?.id) {
+        throw new Error("ID do produto não encontrado")
+      }
+
+      const result = await produtoService.excluirProduto(produto.id)
+      console.log("Resultado da exclusão:", result)
+
       toast({
         title: "Sucesso",
         description: "Produto removido com sucesso.",
       })
-      router.push("/estoque")
-    } catch (error) {
-      console.error("Erro ao remover produto:", error)
+
+      // Aguardar um pouco antes de redirecionar
+      setTimeout(() => {
+        router.push("/estoque")
+      }, 1000)
+    } catch (error: any) {
+      console.error("Erro detalhado ao remover produto:", error)
+      console.error("Response:", error.response)
+      console.error("Status:", error.response?.status)
+      console.error("Data:", error.response?.data)
+
       toast({
         title: "Erro",
-        description: "Não foi possível remover o produto.",
+        description: error.message || "Não foi possível remover o produto.",
         variant: "destructive",
       })
     } finally {
       setDeleteDialogOpen(false)
     }
+  }
+
+  const handleEstoqueOperation = async () => {
+    try {
+      if (quantidadeEstoque <= 0) {
+        toast({
+          title: "Erro",
+          description: "A quantidade deve ser maior que zero.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      console.log(
+        `${tipoOperacao === "adicionar" ? "Adicionando" : "Removendo"} ${quantidadeEstoque} unidades do produto ${produto.id}`,
+      )
+
+      if (tipoOperacao === "adicionar") {
+        await produtoService.adicionarEstoque(produto.id, quantidadeEstoque)
+        toast({
+          title: "Sucesso",
+          description: `${quantidadeEstoque} unidades adicionadas ao estoque.`,
+        })
+      } else {
+        await produtoService.removerEstoque(produto.id, quantidadeEstoque)
+        toast({
+          title: "Sucesso",
+          description: `${quantidadeEstoque} unidades removidas do estoque.`,
+        })
+      }
+
+      setEstoqueDialogOpen(false)
+      setQuantidadeEstoque(0)
+      carregarProduto() // Recarregar para mostrar a quantidade atualizada
+    } catch (error: any) {
+      console.error("Erro ao atualizar estoque:", error)
+
+      // Tratamento específico para estoque insuficiente
+      if (error.response?.status === 400 && tipoOperacao === "remover") {
+        toast({
+          title: "Estoque Insuficiente",
+          description: "Não há estoque suficiente para remover esta quantidade.",
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Erro",
+          description: `Não foi possível ${tipoOperacao === "adicionar" ? "adicionar" : "remover"} estoque.`,
+          variant: "destructive",
+        })
+      }
+    }
+  }
+
+  const openEstoqueDialog = (operacao: "adicionar" | "remover") => {
+    setTipoOperacao(operacao)
+    setQuantidadeEstoque(0)
+    setEstoqueDialogOpen(true)
   }
 
   if (loading) {
@@ -159,7 +255,7 @@ export default function ProdutoDetalhesPage() {
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1">Quantidade em Estoque</h3>
-              <p className="text-lg">{produto.quantidade} unidades</p>
+              <p className="text-lg font-semibold">{produto.quantidade} unidades</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1">Preço Unitário</h3>
@@ -171,15 +267,27 @@ export default function ProdutoDetalhesPage() {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setFormDialogOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Editar
-          </Button>
-          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash className="h-4 w-4 mr-2" />
-            Excluir
-          </Button>
+        <CardFooter className="flex justify-between">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => openEstoqueDialog("adicionar")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Estoque
+            </Button>
+            <Button variant="outline" onClick={() => openEstoqueDialog("remover")}>
+              <Minus className="h-4 w-4 mr-2" />
+              Remover Estoque
+            </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setFormDialogOpen(true)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+            <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash className="h-4 w-4 mr-2" />
+              Excluir
+            </Button>
+          </div>
         </CardFooter>
       </Card>
 
@@ -191,6 +299,39 @@ export default function ProdutoDetalhesPage() {
             <DialogDescription>Atualize as informações do produto abaixo.</DialogDescription>
           </DialogHeader>
           <ProdutoForm produto={produto} onSuccess={handleFormSuccess} onCancel={() => setFormDialogOpen(false)} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de Gestão de Estoque */}
+      <Dialog open={estoqueDialogOpen} onOpenChange={setEstoqueDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tipoOperacao === "adicionar" ? "Adicionar" : "Remover"} Estoque</DialogTitle>
+            <DialogDescription>
+              {tipoOperacao === "adicionar"
+                ? "Adicione unidades ao estoque do produto."
+                : "Remova unidades do estoque do produto."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="quantidade">Quantidade</Label>
+              <Input
+                id="quantidade"
+                type="number"
+                min="1"
+                value={quantidadeEstoque}
+                onChange={(e) => setQuantidadeEstoque(Number(e.target.value))}
+                placeholder="Digite a quantidade"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setEstoqueDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEstoqueOperation}>{tipoOperacao === "adicionar" ? "Adicionar" : "Remover"}</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -214,4 +355,3 @@ export default function ProdutoDetalhesPage() {
     </div>
   )
 }
-

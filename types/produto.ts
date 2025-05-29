@@ -5,6 +5,7 @@ export interface Produto {
     categoria: string
     preco: number
     quantidade: number
+    ativo?:boolean
   }
   
   

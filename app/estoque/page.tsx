@@ -10,6 +10,18 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import apiClient from "@/services/apiClient"
 import { useRouter } from "next/navigation"
 import { BackButton } from "@/components/ui/BackButton"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import produtoService from "@/services/produtoService"
+import { useToast } from "@/components/ui/use-toast"
 
 // Interface para o produto
 interface Produto {
@@ -27,6 +39,9 @@ export default function InventoryPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const { toast } = useToast()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [produtoParaExcluir, setProdutoParaExcluir] = useState<Produto | null>(null)
 
   // Verificar se o usuário tem permissão para visualizar o estoque
   const canViewInventory = hasPermission(Permission.VIEW_INVENTORY) || hasPermission("ESTOQUE_VISUALIZAR")
@@ -83,6 +98,41 @@ export default function InventoryPage() {
       setError(mensagemErro)
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Função para confirmar exclusão de produto
+  const confirmarExclusao = (produto: Produto) => {
+    setProdutoParaExcluir(produto)
+    setDeleteDialogOpen(true)
+  }
+
+  // Função para excluir produto
+  const excluirProduto = async () => {
+    if (!produtoParaExcluir) return
+
+    try {
+      console.log(`Excluindo produto ID: ${produtoParaExcluir.id}`)
+      await produtoService.excluirProduto(produtoParaExcluir.id)
+
+      toast({
+        title: "Sucesso",
+        description: `Produto "${produtoParaExcluir.nome}" excluído com sucesso.`,
+      })
+
+      // Atualizar a lista de produtos
+      carregarProdutos()
+    } catch (error: any) {
+      console.error("Erro ao excluir produto:", error)
+
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível excluir o produto.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleteDialogOpen(false)
+      setProdutoParaExcluir(null)
     }
   }
 
@@ -175,18 +225,14 @@ export default function InventoryPage() {
                   <td className="p-2 text-right">
                     <div className="flex justify-end gap-2">
                       <PermissionGuard permission={Permission.EDIT_INVENTORY} permissions={["ESTOQUE_EDITAR"]}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => router.push(`/estoque/editar/${produto.id}`)}
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => router.push(`/estoque/${produto.id}`)}>
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Editar</span>
                         </Button>
                       </PermissionGuard>
 
                       <PermissionGuard permission={Permission.DELETE_INVENTORY} permissions={["ESTOQUE_REMOVER"]}>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={() => confirmarExclusao(produto)}>
                           <Trash className="h-4 w-4" />
                           <span className="sr-only">Excluir</span>
                         </Button>
@@ -199,6 +245,24 @@ export default function InventoryPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Diálogo de confirmação de exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o produto "{produtoParaExcluir?.nome}"? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={excluirProduto} className="bg-destructive text-destructive-foreground">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
